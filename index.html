@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>秋招工作台 · 单文件版</title>
+<script>document.documentElement.dataset.theme=localStorage.getItem('qz-theme')||'auto'</script>
+<style>
+  /* 主题：日间白底 / 夜间炭黑底（约 #101010 页底、#1c1c1c 卡面）；强调色按页切换：
+     看板页琥珀黄 #f5b90d、日程页蓝。二者都由 body[data-view] 变量驱动。 */
+  :root{--bd:#e3ded0;--tx:#1e1e1c;--mut:#6f6a5c;--bg:#f5f4f0;--card:#ffffff;
+        --ok:#0e7a5f;--warn:#b45309;--bad:#c23a30;--red:#d64541;--hov:#f3efe2;--act:#e9e2c8}
+  html[data-theme="dark"]{--bd:#2e2e2e;--tx:#f2f2f0;--mut:#9c9c96;--bg:#101010;--card:#1c1c1c;
+        --hov:#262622;--act:#33332c}
+  @media (prefers-color-scheme: dark){html[data-theme="auto"]{--bd:#2e2e2e;--tx:#f2f2f0;--mut:#9c9c96;--bg:#101010;--card:#1c1c1c;
+        --hov:#262622;--act:#33332c}}
+  body[data-view="board"]{--acc:#f5b90d;--onAcc:#161616;--accTx:#f5b90d;--accSoft:rgba(245,185,13,.14);
+        --doneBg:rgba(245,185,13,.16);--doneTx:#f5b90d}
+  body[data-view="sched"]{--acc:#2f7bff;--onAcc:#ffffff;--accTx:#4a9eff;--accSoft:rgba(47,123,255,.13);
+        --doneBg:#10294e;--doneTx:#5ea2ff}
+  html[data-theme="light"] body[data-view="board"]{--accTx:#8a6400;--doneBg:#fdf0cd;--doneTx:#8a6400}
+  @media (prefers-color-scheme: light){html[data-theme="auto"] body[data-view="board"]{--accTx:#8a6400;--doneBg:#fdf0cd;--doneTx:#8a6400}}
+  html[data-theme="light"] body[data-view="sched"]{--accTx:#2563eb;--doneBg:#e2ecff;--doneTx:#2563eb}
+  @media (prefers-color-scheme: light){html[data-theme="auto"] body[data-view="sched"]{--accTx:#2563eb;--doneBg:#e2ecff;--doneTx:#2563eb}}
+  *{box-sizing:border-box} body{margin:0;font:14px/1.55 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--tx)}
+  header{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--bd);padding:10px 16px;z-index:9}
+  header .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  h1{font-size:17px;margin:0}
+  .tabs button{font-size:15px;padding:6px 16px} .tabs button.on{background:var(--acc);color:var(--onAcc);border-color:var(--acc);font-weight:600}
+  button{cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:999px;padding:4px 14px;font-size:13px;
+         transition:background .12s,border-color .12s,color .12s,filter .12s,transform .05s}
+  button:hover{border-color:var(--acc);color:var(--accTx);background:var(--hov)}
+  button:active{background:var(--act);transform:translateY(1px)}
+  button.primary{background:var(--acc);color:var(--onAcc);border-color:var(--acc);font-weight:600}
+  button.primary:hover{background:var(--acc);color:var(--onAcc);filter:brightness(1.1)}
+  button.primary:active{background:var(--acc);color:var(--onAcc);filter:brightness(.92);transform:translateY(1px)}
+  button.btn-done{background:var(--doneBg);color:var(--doneTx);border-color:transparent;font-weight:600}
+  button.btn-done:hover{background:var(--doneBg);color:var(--doneTx);filter:brightness(1.25)}
+  button.btn-done:active{background:var(--doneBg);color:var(--doneTx);filter:brightness(.9);transform:translateY(1px)}
+  button.btn-drop{color:var(--red)}
+  button.btn-drop:hover{border-color:var(--red);color:var(--red);background:transparent}
+  button.btn-drop:active{background:var(--act);transform:translateY(1px)}
+  button:disabled{opacity:.45;cursor:default;transform:none;filter:none}
+  main{max-width:1060px;margin:0 auto;padding:16px 16px 60px}
+  /* 统计卡 */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:6px 0 12px}
+  @media (max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px 18px}
+  .stat .num{font-size:32px;font-weight:700;line-height:1.15}
+  .stat .num .u{font-size:15px;font-weight:400;color:var(--mut);margin-left:3px}
+  .stat .num.red{color:var(--red)}
+  .stat .lab{color:var(--mut);font-size:13px;margin-top:2px}
+  .distline{display:flex;gap:10px;align-items:center;flex-wrap:wrap;color:var(--mut);font-size:13.5px;margin:2px 0 12px}
+  .distline b{color:var(--tx)}
+  .themebtn{border-radius:999px;padding:5px 14px}
+  /* 搜索与页签 */
+  .search{width:100%;padding:10px 14px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--tx);font-size:14px;margin:0 0 14px}
+  .search::placeholder{color:var(--mut)}
+  .btabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 6px}
+  .btabs button{font-size:14.5px;padding:7px 18px;border-radius:999px}
+  .btabs button.on{background:var(--acc);color:var(--onAcc);border-color:var(--acc);font-weight:600}
+  .btabs button.on:hover{color:var(--onAcc);filter:brightness(1.08)}
+  /* 分区标题 */
+  h2{font-size:19px;margin:20px 0 12px;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+  h2 .cnt{font-size:13.5px;color:var(--mut);font-weight:400}
+  h3{font-size:14.5px;margin:16px 0 8px}
+  h3 .cnt{font-size:12.5px;color:var(--mut);font-weight:400}
+  /* 卡片 */
+  .card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px 18px;margin:0 0 12px}
+  .chead{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .no{flex:none;width:26px;height:26px;border-radius:50%;background:var(--acc);color:var(--onAcc);font-weight:700;font-size:13.5px;display:inline-flex;align-items:center;justify-content:center}
+  .co{font-size:16.5px;font-weight:700} .unit{color:var(--mut);font-size:13px}
+  .dlbadge{display:inline-block;background:var(--hov);color:var(--mut);border-radius:999px;padding:1px 10px;font-size:12.5px;margin:8px 0 2px}
+  .descr{color:var(--mut);font-size:13.5px;white-space:pre-wrap;margin:8px 0}
+  .job{padding:10px 0 2px}
+  .job .t{font-weight:700;font-size:15px} .job .m{color:var(--mut);font-size:12.5px}
+  .job .d{font-size:13.5px;white-space:pre-wrap;margin:5px 0;color:var(--tx)}
+  .ops{margin:8px 0 4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .badge{font-size:12px;border-radius:999px;padding:2px 10px;background:var(--warn);color:#fff}
+  .badge.done{background:var(--ok)} .badge.pause{background:var(--mut)}
+  .links{margin:8px 0 2px}
+  .links a,.job a,.card a{color:var(--accTx)}
+  .tagrow{margin-top:10px}
+  .tag{display:inline-block;background:var(--accSoft);color:var(--accTx);border-radius:999px;padding:1px 10px;font-size:12.5px;margin:2px 6px 2px 0}
+  .tag.hot{background:rgba(214,69,65,.14);color:var(--red);font-weight:600}
+  .pill{font-size:13px;border:1px solid var(--warn);color:var(--warn);border-radius:999px;padding:2px 10px;font-weight:600}
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--bd);border-radius:12px;overflow:hidden}
+  td,th{border-bottom:1px solid var(--bd);padding:7px 9px;text-align:left;vertical-align:top;font-size:13px}
+  .st-投递中{color:var(--accTx)} .st-笔试{color:var(--warn)} .st-面试{color:var(--ok)} .st-未通过{color:var(--mut)}
+  .mut{color:var(--mut)} .small{font-size:12.5px}
+  a{color:var(--accTx)}
+  /* 日程页 */
+  .sched-head{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin:4px 0 14px}
+  .today{font-size:27px;font-weight:700;line-height:1.25}
+  .today .bdate{color:var(--accTx)}
+  .sched-head .sub{color:var(--mut);font-size:13.5px;margin-top:3px}
+  .rcard .rline1{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+  .cdnum{color:var(--accTx);font-size:29px;font-weight:700;line-height:1}
+  .cdunit{color:var(--mut);font-size:13.5px}
+  .rtitle{font-weight:700;font-size:16px}
+  .rtime{color:var(--mut);font-size:13.5px;margin-top:7px}
+  .item .when{font-weight:700}
+  .cd{color:var(--accTx);font-weight:700;margin-top:4px}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:8px 18px;border-radius:20px;opacity:0;transition:.25s;pointer-events:none;z-index:99;max-width:88vw;text-align:center}
+  .toast.show{opacity:.94}
+</style>
+<!--
+════════════════════════════════════════════════════════════════════
+给 AI 助手的维护说明（人看不到这段，AI 读文件时请先读这里）
+
+本文件是「秋招工作台 · 单文件版」：一个自包含的校招投递管理页面，
+无服务器、无依赖，双击即可在浏览器打开。界面与操作逻辑都在文件后部
+的 <script id="app-script"> 里，一般不需要改代码。
+
+
+1. 文件内嵌数据：<script type="application/json" id="qz-seed"> 里的
+JSON，是本文件的出厂/交付数据。
+2. 浏览器本地数据：用户在页面上的操作保存在 localStorage
+（键 qz-single-db-v1），打开时页面比较两边的 savedAt，用较新的一份。
+因此维护数据的正确姿势：
+- 用户在页面里操作过 → 先让用户点页面右上角「导出数据」拿到最新
+JSON，你改那份 JSON，再让用户点「导入数据」导回；或——
+- 你直接改本文件 #qz-seed 的 JSON，并把 savedAt 改成当前时间
+（ISO 格式，如 2026-11-20T23:30:00），用户下次打开即生效。
+两种方式不要混用同一批改动，避免互相覆盖。
+
+顶层对象：
+{ version:1, savedAt:"ISO时间",
+cards:[], records:[], pauses:[], verify:[], excluded:[], schedule:[]}
+
+cards 待投递卡（一家公司一张卡，可多岗位）：
+{ id:整数且全局唯一, company:"公司名", unit:"单位/部门",
+deadline:"YYYY-MM-DD" 或 null, rolling:true/false（招满即止）,
+descr:"卡片综述", tags:["标签"],
+jobs:[{ title:"岗位名（卡内唯一）", meta:"城市 · 学历 · 届别",
+desc:"岗位说明/JD 要点"}],
+links:[{ before:"投递入口：", text:"链接文字", href:"https://…",
+after:""}]}
+
+records 已投记录：
+{ id, company, job:"岗位名", location:"城市",
+appliedOn:"YYYY-MM-DD", status:"投递中|笔试|面试|未通过",
+jd:"JD 全文或要点", url:"投递链接", note:"备注"}
+
+pauses 暂缓岗位：{ cardId, jobTitle}（与 cards 里的岗位对应）
+
+verify 备选·待核实：{ id, who:"对象", why:"卡点/待核实原因"}
+excluded 已排除：{ id, who:"公司或公司 · 岗位", why:"排除/关闭原因"}
+
+schedule 日程事项：
+{ id, company, title:"事项名",
+type:"assess 线上测评 | exam-online 线上笔试 | exam-offline 线下笔试
+| ai AI测评 | interview 真人面试 | talk 宣讲会
+| deadline 网申截止 | todo 待办",
+date:"YYYY-MM-DD" 或 null（null = 无日期待办）,
+dateEnd:"YYYY-MM-DD" 或 null（窗口型事项的结束日）,
+time:"09:00–11:00" 或 "", status:"状态说明", detail:"详情",
+entry:"行动入口URL", entryText:"入口文字",
+link:"出处URL", linkText:"出处文字",
+cdVerb:"开考/开始等倒计时动词", done:false, dropped:false}
+
+（你在数据里手动模拟时请保持一致）
+- 岗位点「已投递」→ 新增一条 records（status=投递中，appliedOn=当天，
+location 取 job.meta 第一个「·」前字段），并从卡里移除该岗位；
+卡内岗位全部处置完 → 整卡删除，并往 excluded 追加一条关卡说明。
+- 岗位点「放弃」→ 从卡里移除；卡未空时往 excluded 追加「公司 · 岗位」一条。
+- 岗位点「暂缓」→ 往 pauses 加一条；「取消暂缓」删之。
+- 日程点「已完成」→ done=true（页面不再显示）；点「放弃」→ 整条删除。
+════════════════════════════════════════════════════════════════════
+-->
+<style>
+.frm label{display:block;font-size:12.5px;color:var(--mut);margin:8px 0 3px}
+.frm input[type=text],.frm input[type=date],.frm input[type=url],.frm select,.frm textarea{width:100%;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);font-size:13.5px}
+.frm textarea{min-height:56px;resize:vertical}
+.frm.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+@media (max-width:760px){.frm.grid{grid-template-columns:1fr}}
+.frm.jobrow{border:1px dashed var(--bd);border-radius:10px;padding:10px 12px;margin:8px 0}
+.frm.frow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+select.stsel{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:999px;padding:2px 8px;font-size:12.5px}
+.mini{padding:2px 10px;font-size:12px}
+</style>
+</head>
+<body data-view="board">
+<header>
+<div class="row">
+<h1>秋招工作台</h1>
+<span class="tabs">
+<button id="tab-board" class="on" onclick="show('board')">投递看板</button>
+<button id="tab-sched" onclick="show('sched')">日程表</button>
+</span>
+<span style="flex:1"></span>
+<button class="primary" onclick="openCardForm()">＋ 新增公司卡</button>
+<button onclick="exportData()">导出数据</button>
+<button onclick="document.getElementById('importfile').click()">导入数据</button>
+<input type="file" id="importfile" accept=".json,application/json" style="display:none" onchange="importData(this)">
+<button onclick="exportIcs()">导出.ics</button>
+</div>
+<div class="row" style="margin-top:6px"><span class="small mut">数据保存在本浏览器里；换浏览器、清缓存会丢，请定期点「导出数据」备份。把导出的 JSON 或本文件交给 AI 助手即可帮你维护（文件顶部有给 AI 的说明）。</span></div>
+</header>
+<main>
+<div id="view-board">
+<div class="stats">
+<div class="stat"><div class="num" id="st-open">–</div><div class="lab" id="st-openlab">待投递（家）</div></div>
+<div class="stat"><div class="num" id="st-rec">–</div><div class="lab">已投（条）</div></div>
+<div class="stat"><div class="num" id="st-exam">–</div><div class="lab">笔试 · 面试</div></div>
+<div class="stat"><div class="num" id="st-pause">–</div><div class="lab">暂缓岗位（个）</div></div>
+</div>
+<div class="distline"><span id="distline"></span><span style="flex:1"></span><button class="themebtn" onclick="cycleTheme()"></button></div>
+<input class="search" id="bq" type="search" placeholder="搜索整个看板：公司、岗位、城市或状态" oninput="Q=this.value;applySearch()">
+<nav class="btabs" id="btabs"></nav>
+<div id="form-area"></div>
+<section class="panel" id="panel-apply"></section>
+<section class="panel" id="panel-records" style="display:none"></section>
+<section class="panel" id="panel-verify" style="display:none"></section>
+<section class="panel" id="panel-excluded" style="display:none"></section>
+</div>
+<div id="view-sched" style="display:none">
+<div id="sform-area"></div>
+<div id="sched-main"></div>
+</div>
+</main>
+<div class="toast" id="toast"></div>
+<script id="qz-seed" type="application/json">
+{"version":1,"savedAt":"2026-11-20T00:00:00",
+"cards":[
+{"id":1,"company":"示例公司A","unit":"示例传媒集团 · 品牌中心","deadline":null,"rolling":false,
+"descr":"示例卡：一家公司的多个岗位合并为一张卡。点岗位的「已投递」会立即生成已投记录并落账；「放弃」移除岗位；「暂缓」把岗位移入暂缓区。右上角「＋ 新增公司卡」可以加自己的卡，本卡右上角「编辑 / 删除」可以改或删。",
+"tags":["示例"],
+"jobs":[{"title":"内容编导（示例）","meta":"北京 · 硕士 · 2027 届","desc":"负责短视频策划、拍摄与后期。专业要求：新闻传播学、广播电视学相关专业。"},
+{"title":"新媒体运营（示例）","meta":"上海 · 本科及以上 · 2027 届","desc":"负责官方账号内容运营与选题策划。"}],
+"links":[{"before":"投递入口：","text":"示例投递页","href":"https://example.com","after":""}]},
+{"id":2,"company":"示例公司B","unit":"示例科技公司","deadline":"2027-01-31","rolling":true,
+"descr":"示例卡：带截止日期的卡按截止时间自动排序；rolling 表示招满即止。",
+"tags":["示例"],
+"jobs":[{"title":"品牌策划（示例）","meta":"深圳 · 本科及以上 · 2027 届","desc":"负责品牌传播策划与活动落地。"}],
+"links":[{"before":"投递入口：","text":"示例投递页","href":"https://example.com","after":""}]}],
+"records":[],
+"pauses":[],
+"verify":[{"id":1,"who":"示例公司C","why":"示例：岗位 JD 待核实——官网为动态页，投前需人工打开确认岗位仍在招。"}],
+"excluded":[],
+"schedule":[
+{"id":1,"company":"示例公司","title":"笔试 / 测评跟进（示例）","type":"todo","date":null,"dateEnd":null,"time":"","status":"示例","detail":"这是一条示例日程：带明确日期的线上测评、笔试、AI 测评、真人面试会自动进入「迫在眉睫」；点「已完成」即落账隐藏，点「放弃」即删除。日程页右上角可新增日程。","entry":"","entryText":"","link":"","linkText":"","cdVerb":"","done":false,"dropped":false}]}
+</script>
+<script id="app-script">
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2200)}
+function show(v){document.body.dataset.view=v;$('#view-board').style.display=v==='board'?'':'none';$('#view-sched').style.display=v==='sched'?'':'none';$('#tab-board').classList.toggle('on',v==='board');$('#tab-sched').classList.toggle('on',v==='sched')}
+
+/* 主题三态：自动 → 日间 → 夜间（存 localStorage qz-theme） */
+const THEMES=['auto','light','dark'];
+function effDark(){const m=document.documentElement.dataset.theme||'auto';return m==='dark'||(m==='auto'&&window.matchMedia('(prefers-color-scheme: dark)').matches)}
+function themeLabel(){const m=document.documentElement.dataset.theme||'auto';if(m==='auto')return '自动 · '+(effDark()?'夜间':'日间');return m==='dark'?'夜间模式':'日间模式'}
+function paintThemeBtn(){document.querySelectorAll('.themebtn').forEach(b=>b.textContent=themeLabel())}
+function cycleTheme(){const cur=document.documentElement.dataset.theme||'auto';const nx=THEMES[(THEMES.indexOf(cur)+1)%3];document.documentElement.dataset.theme=nx;localStorage.setItem('qz-theme',nx);paintThemeBtn();toast('已切换为'+themeLabel())}
+
+/* ================= 数据层（CORE） =================
+   数据保存在 localStorage；文件内嵌 #qz-seed 为交付数据。
+   打开时比较 savedAt，取较新的一份（AI 改文件维护靠这条规则）。 */
+const LSKEY='qz-single-db-v1';
+const STATUSES=['投递中','笔试','面试','未通过'];
+function seedData(){return JSON.parse(document.getElementById('qz-seed').textContent)}
+function norm(d){d=d||{};d.cards=d.cards||[];d.records=d.records||[];d.pauses=d.pauses||[];d.verify=d.verify||[];d.excluded=d.excluded||[];d.schedule=d.schedule||[];return d}
+function loadDB(){
+  const seed=seedData();
+  let local=null;
+  try{local=JSON.parse(localStorage.getItem(LSKEY)||'null')}catch(e){}
+  if(local&&local.cards&&(!seed.savedAt||!local.savedAt||local.savedAt>=seed.savedAt))return norm(local);
+  return norm(seed);
+}
+let DB=loadDB();
+function save(){DB.savedAt=new Date().toISOString();try{localStorage.setItem(LSKEY,JSON.stringify(DB))}catch(e){toast('本地保存失败，请及时导出数据备份')}}
+function nextId(arr){return arr.reduce((m,x)=>Math.max(m,x.id||0),0)+1}
+function todayStr(){const t=new Date();return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')}
+function isPaused(cardId,title){return DB.pauses.some(p=>p.cardId===cardId&&p.jobTitle===title)}
+function openCounts(){let oc=0,oj=0;for(const c of DB.cards){let n=0;for(const j of c.jobs)if(!isPaused(c.id,j.title))n++;if(n){oc++;oj+=n}}return{openCards:oc,openJobs:oj}}
+function sortedRecords(){const rs=[...DB.records];rs.sort((a,b)=>((b.appliedOn||'')<(a.appliedOn||'')?-1:(b.appliedOn||'')>(a.appliedOn||'')?1:b.id-a.id));const d=rs.filter(r=>r.appliedOn),u=rs.filter(r=>!r.appliedOn);return d.concat(u)}
+
+function markJob(cardId,idx,action){
+  const c=DB.cards.find(x=>x.id===cardId);if(!c)return;
+  const j=c.jobs[idx];if(!j)return;
+  const today=todayStr();
+  if(action==='paused'){
+    if(!isPaused(cardId,j.title))DB.pauses.push({cardId,jobTitle:j.title});
+    save();renderAll();toast('已暂缓');return;
+  }
+  c.jobs=c.jobs.filter((_,i)=>i!==idx);
+  DB.pauses=DB.pauses.filter(p=>!(p.cardId===cardId&&p.jobTitle===j.title));
+  if(action==='applied'){
+    const loc=(j.meta&&j.meta.includes('·'))?j.meta.split('·')[0].trim():'';
+    const url=((c.links||[]).find(l=>l.href)||{}).href||'';
+    DB.records.push({id:nextId(DB.records),company:c.company,job:j.title,location:loc,appliedOn:today,status:'投递中',jd:j.desc||'',url,note:'看板标记已投递（'+today+'）'});
+  }
+  if(c.jobs.length===0){
+    DB.cards=DB.cards.filter(x=>x.id!==cardId);
+    DB.pauses=DB.pauses.filter(p=>p.cardId!==cardId);
+    const why=(action==='applied'?`岗位「${j.title}」已投递（见已投记录）。`:`岗位「${j.title}」已放弃（看板标记）。`)+`该卡全部岗位已处置，整卡关闭（${today}）。`;
+    DB.excluded.push({id:nextId(DB.excluded),who:c.company,why});
+  }else if(action==='dropped'){
+    DB.excluded.push({id:nextId(DB.excluded),who:c.company+' · '+j.title,why:`在看板标记放弃（${today}）。`});
+  }
+  save();renderAll();toast(action==='applied'?'已投递 · 已落账生效':'已放弃 · 已落账生效');
+}
+function unpauseJob(cardId,title){DB.pauses=DB.pauses.filter(p=>!(p.cardId===cardId&&p.jobTitle===title));save();renderAll();toast('已取消暂缓')}
+function unpauseIdx(cardId,idx){const c=DB.cards.find(x=>x.id===cardId);if(!c||!c.jobs[idx])return;unpauseJob(cardId,c.jobs[idx].title)}
+function deleteCard(cardId){if(!confirm('确定删除这张卡？卡内岗位将一并删除（不进已排除清单）。'))return;DB.cards=DB.cards.filter(x=>x.id!==cardId);DB.pauses=DB.pauses.filter(p=>p.cardId!==cardId);save();renderAll();toast('已删除')}
+function setRecStatus(id,st){const r=DB.records.find(x=>x.id===id);if(!r)return;r.status=st;save();renderAll();toast('状态已改为 '+st)}
+function delRecord(id){if(!confirm('确定删除这条已投记录？'))return;DB.records=DB.records.filter(x=>x.id!==id);save();renderAll();toast('已删除')}
+function addVerify(who,why){DB.verify.push({id:nextId(DB.verify),who,why});save();renderAll();toast('已加入备选')}
+function delVerify(id){DB.verify=DB.verify.filter(x=>x.id!==id);save();renderAll()}
+function delExcluded(id){DB.excluded=DB.excluded.filter(x=>x.id!==id);save();renderAll()}
+function schedDone(id){const it=DB.schedule.find(x=>x.id===id);if(!it)return;it.done=true;save();renderAll();toast('已完成 · 已落账生效')}
+function schedDrop(id){DB.schedule=DB.schedule.filter(x=>x.id!==id);save();renderAll();toast('已放弃 · 已落账生效')}
+/* ================= /CORE ================= */
+
+function linkLine(l){const t=l.href?`<a href="${esc(l.href)}" target="_blank">${esc(l.text||l.href)}</a>`:esc(l.text||'');return `<div class="small">${esc(l.before||'')}${t}${esc(l.after||'')}</div>`}
+function renderAll(){renderBoard();renderSched();paintThemeBtn()}
+
+/* ---------------- 看板 ---------------- */
+let BTAB='apply',Q='';
+const BTABS=[['apply','待投递'],['records','全部已投'],['verify','备选 · 待核实'],['excluded','已排除']];
+function setBTab(t){BTAB=t;document.querySelectorAll('#btabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));BTABS.forEach(([k])=>{const el=$('#panel-'+k);if(el)el.style.display=k===t?'':'none'});applySearch()}
+function applySearch(){
+  const q=Q.trim().toLowerCase(),panel=$('#panel-'+BTAB);if(!panel)return;
+  let vis=0;
+  panel.querySelectorAll('.flt').forEach(el=>{const on=!q||(el.dataset.q||'').includes(q);el.style.display=on?'':'none';if(on)vis++});
+  let nr=panel.querySelector('.nores');if(!nr){nr=document.createElement('p');nr.className='nores mut';nr.textContent='没有匹配的条目';panel.appendChild(nr)}
+  nr.style.display=(q&&vis===0)?'':'none';
+}
+function renderHead(){
+  const cnt=openCounts(),sc={};
+  DB.records.forEach(r=>sc[r.status]=(sc[r.status]||0)+1);
+  $('#st-open').textContent=cnt.openCards;
+  $('#st-openlab').textContent=`待投递（家）· ${cnt.openJobs} 岗`;
+  $('#st-rec').textContent=DB.records.length;
+  $('#st-exam').textContent=(sc['笔试']||0)+(sc['面试']||0);
+  $('#st-pause').textContent=DB.pauses.length;
+  const parts=STATUSES.filter(k=>sc[k]).map(k=>`${k} <b>${sc[k]}</b>`);
+  Object.keys(sc).filter(k=>!STATUSES.includes(k)).forEach(k=>parts.push(`${esc(k)} <b>${sc[k]}</b>`));
+  parts.push(`暂缓 <b>${DB.pauses.length}</b> 个岗位`);
+  $('#distline').innerHTML='状态分布：'+parts.join(' · ');
+}
+function cardHtml(c,no){
+  const jobsHtml=c.jobs.map((j,idx)=>{
+    let ops='';
+    if(isPaused(c.id,j.title))ops=`<div class="ops"><span class="badge pause">暂缓中</span>
+      <button onclick="unpauseIdx(${c.id},${idx})">取消暂缓</button></div>`;
+    else ops=`<div class="ops">
+      <button class="primary" onclick="markJob(${c.id},${idx},'applied')">已投递</button>
+      <button onclick="markJob(${c.id},${idx},'dropped')">放弃</button>
+      <button onclick="markJob(${c.id},${idx},'paused')">暂缓</button></div>`;
+    return `<div class="job"><span class="t">${esc(j.title)}</span> <span class="m">${esc(j.meta||'')}</span>
+      ${j.desc?`<div class="d">${esc(j.desc)}</div>`:''}${ops}</div>`}).join('');
+  const dl=c.deadline?`截止 ${esc(c.deadline)}`:(c.rolling?'招满即止':'无公布截止 · 排在最后');
+  const q=(c.company+' '+(c.unit||'')+' '+(c.descr||'')+' '+c.jobs.map(j=>j.title+' '+(j.meta||'')).join(' ')+' '+(c.tags||[]).join(' ')).toLowerCase();
+  return `<div class="card flt" data-q="${esc(q)}"><div class="chead"><span class="no">${no}</span><span class="co">${esc(c.company)}</span> <span class="unit">${esc(c.unit||'')}</span>
+    <span style="flex:1"></span><button class="mini" onclick="openCardForm(${c.id})">编辑</button><button class="mini btn-drop" onclick="deleteCard(${c.id})">删除</button></div>
+    <div><span class="dlbadge">${dl}</span></div>
+    ${c.descr?`<div class="descr">${esc(c.descr)}</div>`:''}
+    ${jobsHtml}
+    ${(c.links&&c.links.length)?`<div class="links">${c.links.map(linkLine).join('')}</div>`:''}
+    ${(c.tags&&c.tags.length)?`<div class="tagrow">${c.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:''}</div>`;
+}
+function renderBoard(){
+  renderHead();
+  $('#btabs').innerHTML=BTABS.map(([k,label])=>`<button data-t="${k}" class="${k===BTAB?'on':''}" onclick="setBTab('${k}')">${label}</button>`).join('');
+  const cards=[...DB.cards].sort((a,b)=>{if(a.deadline&&b.deadline)return a.deadline<b.deadline?-1:1;if(a.deadline)return -1;if(b.deadline)return 1;return a.id-b.id});
+  let openHtml='',pauseHtml='',no=0;
+  for(const c of cards){
+    const openN=c.jobs.filter(j=>!isPaused(c.id,j.title)).length;
+    if(openN===0&&c.jobs.length===0)continue;
+    no++;
+    if(openN>0)openHtml+=cardHtml(c,no);else if(c.jobs.length)pauseHtml+=cardHtml(c,no);
+  }
+  const cnt=openCounts();
+  $('#panel-apply').innerHTML=`
+    <h2>待投递 <span class="cnt">${cnt.openCards} 家 · ${cnt.openJobs} 个岗位　另暂缓 ${DB.pauses.length} 个岗位　按报名截止从早到晚自动排序</span></h2>
+    ${openHtml||'<p class="mut">无</p>'}
+    ${pauseHtml?`<h2>暂缓投递 <span class="cnt">${DB.pauses.length} 个岗位</span></h2>${pauseHtml}`:''}`;
+  const recs=sortedRecords();
+  $('#panel-records').innerHTML=`<h2>全部已投 <span class="cnt">${recs.length} 条 · 按投递日期倒序、无日期置末尾</span></h2>
+    <div style="margin:0 0 10px"><button onclick="openRecordForm()">＋ 新增已投记录</button></div>
+    <table><tr><th>日期</th><th>公司</th><th>岗位</th><th>地点</th><th>状态</th><th>备注</th><th></th></tr>${recs.map(r=>`<tr class="flt" data-q="${esc((r.company+' '+r.job+' '+(r.location||'')+' '+(r.status||'')).toLowerCase())}"><td>${esc(r.appliedOn||'—')}</td><td>${esc(r.company)}</td><td>${r.url?`<a href="${esc(r.url)}" target="_blank">${esc(r.job)}</a>`:esc(r.job)}</td><td>${esc(r.location||'')}</td><td><select class="stsel st-${esc(r.status)}" onchange="setRecStatus(${r.id},this.value)">${STATUSES.map(s=>`<option ${s===r.status?'selected':''}>${s}</option>`).join('')}</select></td><td class="small mut">${esc((r.note||'').slice(0,80))}</td><td><button class="mini btn-drop" onclick="delRecord(${r.id})">删除</button></td></tr>`).join('')}</table>`;
+  $('#panel-verify').innerHTML=`<h2>备选 <span class="cnt">${DB.verify.length} 条 · 待核实</span></h2>
+    <div class="frm" style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px">
+      <input type="text" id="vf-who" placeholder="对象（如公司名）" style="flex:1;min-width:140px">
+      <input type="text" id="vf-why" placeholder="卡点 / 待核实原因" style="flex:2;min-width:200px">
+      <button class="primary" onclick="submitVerify()">加入备选</button></div>
+    <table><tr><th>对象</th><th>卡点</th><th></th></tr>${DB.verify.map(v=>`<tr class="flt" data-q="${esc((v.who+' '+v.why).toLowerCase())}"><td>${esc(v.who)}</td><td class="small">${esc(v.why)}</td><td><button class="mini btn-drop" onclick="delVerify(${v.id})">删除</button></td></tr>`).join('')}</table>`;
+  $('#panel-excluded').innerHTML=`<h2>已排除 <span class="cnt">${DB.excluded.length} 条</span></h2><table><tr><th>公司/岗位</th><th>原因</th><th></th></tr>${DB.excluded.map(e=>`<tr class="flt" data-q="${esc((e.who+' '+e.why).toLowerCase())}"><td>${esc(e.who)}</td><td class="small">${esc(e.why)}</td><td><button class="mini btn-drop" onclick="delExcluded(${e.id})">删除</button></td></tr>`).join('')}</table>`;
+  setBTab(BTAB);
+}
+function submitVerify(){const who=$('#vf-who').value.trim(),why=$('#vf-why').value.trim();if(!who){toast('请填对象');return}addVerify(who,why)}
+</script>
+<script>
+/* ---------------- 表单：新增/编辑 ---------------- */
+function closeForm(){$('#form-area').innerHTML=''}
+function closeSForm(){$('#sform-area').innerHTML=''}
+let editCardId=null;
+function jobRowHtml(){return `<div class="jobrow">
+  <label>岗位名 *</label><input type="text" class="jr-t" placeholder="如 内容编导">
+  <label>岗位信息（城市 · 学历 · 届别）</label><input type="text" class="jr-m" placeholder="如 北京 · 硕士 · 2027 届">
+  <label>岗位说明 / JD 要点</label><textarea class="jr-d"></textarea>
+  <div style="margin-top:6px"><button class="mini btn-drop" onclick="this.closest('.jobrow').remove()">删掉这个岗位</button></div></div>`}
+function openCardForm(id){
+  editCardId=id||null;
+  const c=id?DB.cards.find(x=>x.id===id):null;
+  show('board');
+  $('#form-area').innerHTML=`<div class="card frm"><h3 style="margin-top:0">${c?'编辑公司卡':'新增公司卡'}</h3>
+    <div class="grid">
+      <div><label>公司名 *</label><input type="text" id="cf-company"></div>
+      <div><label>单位 / 部门</label><input type="text" id="cf-unit"></div>
+      <div><label>报名截止（留空 = 无公布截止）</label><input type="date" id="cf-deadline"></div>
+      <div><label>标签（逗号分隔）</label><input type="text" id="cf-tags"></div>
+    </div>
+    <label style="margin-top:10px"><input type="checkbox" id="cf-rolling" style="width:auto"> 招满即止</label>
+    <label>卡片综述</label><textarea id="cf-descr"></textarea>
+    <div class="grid">
+      <div><label>投递入口文字</label><input type="text" id="cf-linktext" placeholder="如 官方投递页"></div>
+      <div><label>投递入口链接</label><input type="url" id="cf-linkhref" placeholder="https://"></div>
+    </div>
+    <h3>岗位</h3><div id="cf-jobs"></div>
+    <button onclick="$('#cf-jobs').insertAdjacentHTML('beforeend',jobRowHtml())">＋ 再加一个岗位</button>
+    <div class="frow"><button class="primary" onclick="submitCardForm()">${c?'保存修改':'建卡'}</button>
+    <button onclick="closeForm()">取消</button></div></div>`;
+  const jobsEl=$('#cf-jobs');
+  if(c){
+    $('#cf-company').value=c.company||'';$('#cf-unit').value=c.unit||'';
+    $('#cf-deadline').value=c.deadline||'';$('#cf-tags').value=(c.tags||[]).join('，');
+    $('#cf-rolling').checked=!!c.rolling;$('#cf-descr').value=c.descr||'';
+    const l=(c.links||[])[0]||{};$('#cf-linktext').value=l.text||'';$('#cf-linkhref').value=l.href||'';
+    (c.jobs||[]).forEach(j=>{jobsEl.insertAdjacentHTML('beforeend',jobRowHtml());const row=jobsEl.lastElementChild;row.querySelector('.jr-t').value=j.title||'';row.querySelector('.jr-m').value=j.meta||'';row.querySelector('.jr-d').value=j.desc||''});
+  }
+  if(!jobsEl.children.length)jobsEl.insertAdjacentHTML('beforeend',jobRowHtml());
+  $('#form-area').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function submitCardForm(){
+  const company=$('#cf-company').value.trim();
+  if(!company){toast('请填公司名');return}
+  const jobs=[...document.querySelectorAll('#cf-jobs .jobrow')].map(r=>({title:r.querySelector('.jr-t').value.trim(),meta:r.querySelector('.jr-m').value.trim(),desc:r.querySelector('.jr-d').value.trim()})).filter(j=>j.title);
+  if(!jobs.length){toast('至少填一个岗位');return}
+  const href=$('#cf-linkhref').value.trim(),lt=$('#cf-linktext').value.trim();
+  const data={company,unit:$('#cf-unit').value.trim(),deadline:$('#cf-deadline').value||null,rolling:$('#cf-rolling').checked,
+    descr:$('#cf-descr').value.trim(),tags:$('#cf-tags').value.split(/[,，]/).map(s=>s.trim()).filter(Boolean),
+    jobs,links:href||lt?[{before:'投递入口：',text:lt||href,href,after:''}]:[]};
+  if(editCardId){
+    const c=DB.cards.find(x=>x.id===editCardId);if(!c)return;
+    Object.assign(c,data);
+    const titles=new Set(jobs.map(j=>j.title));
+    DB.pauses=DB.pauses.filter(p=>p.cardId!==c.id||titles.has(p.jobTitle));
+    toast('已保存修改');
+  }else{
+    DB.cards.push(Object.assign({id:nextId(DB.cards)},data));
+    toast('已建卡');
+  }
+  editCardId=null;closeForm();save();renderAll();
+}
+function openRecordForm(){
+  show('board');
+  $('#form-area').innerHTML=`<div class="card frm"><h3 style="margin-top:0">新增已投记录</h3>
+    <div class="grid">
+      <div><label>公司名 *</label><input type="text" id="rf-company"></div>
+      <div><label>岗位名 *</label><input type="text" id="rf-job"></div>
+      <div><label>地点</label><input type="text" id="rf-loc"></div>
+      <div><label>投递日期</label><input type="date" id="rf-date"></div>
+      <div><label>状态</label><select id="rf-status">${STATUSES.map(s=>`<option>${s}</option>`).join('')}</select></div>
+      <div><label>投递链接</label><input type="url" id="rf-url" placeholder="https://"></div>
+    </div>
+    <label>备注</label><textarea id="rf-note"></textarea>
+    <div class="frow"><button class="primary" onclick="submitRecordForm()">添加记录</button><button onclick="closeForm()">取消</button></div></div>`;
+  $('#rf-date').value=todayStr();
+  $('#form-area').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function submitRecordForm(){
+  const company=$('#rf-company').value.trim(),job=$('#rf-job').value.trim();
+  if(!company||!job){toast('公司和岗位必填');return}
+  DB.records.push({id:nextId(DB.records),company,job,location:$('#rf-loc').value.trim(),appliedOn:$('#rf-date').value||null,status:$('#rf-status').value,jd:'',url:$('#rf-url').value.trim(),note:$('#rf-note').value.trim()});
+  closeForm();save();renderAll();toast('已添加记录');
+}
+
+/* ---------------- 日程表 ---------------- */
+const TL={assess:'线上测评','exam-online':'线上笔试','exam-offline':'线下笔试',ai:'AI测评',interview:'真人面试',talk:'宣讲会',deadline:'网申截止',todo:'待办',done:'已完成'};
+const FIVE=['assess','exam-online','exam-offline','ai','interview'];
+function finished(it){return it.done||it.dropped||it.type==='done'||/^(已完成|已过期|已结束)/.test(it.status||'')}
+function visible(it){return !finished(it)&&!(it.date&&it.date<todayStr())}
+function daysUntil(ds){const t=new Date();t.setHours(0,0,0,0);const d=new Date(ds+'T00:00:00');return Math.round((d-t)/864e5)}
+function cdText(it){
+  const days=daysUntil(it.date),tm=it.time?' '+esc(it.time):'';
+  if(days===0)return `0 天后 · 今天${tm}`;
+  if(days===1)return `1 天后 · 明天${tm}`;
+  const d=new Date(it.date+'T00:00:00');
+  return `${days} 天后 · ${d.getMonth()+1} 月 ${d.getDate()} 日${tm}`;
+}
+const WD=['日','一','二','三','四','五','六'];
+function schedOps(it){return `<button class="btn-done" onclick="schedDone(${it.id})">已完成</button>
+  <button onclick="openSchedForm(${it.id})">编辑</button>
+  <button class="btn-drop" onclick="schedDrop(${it.id})">放弃</button>`}
+function entryLine(it){return it.entry?`<div class="small">入口：<a href="${esc(it.entry)}" target="_blank">${esc(it.entryText||it.entry)}</a></div>`:(it.entryText?`<div class="small">入口：${esc(it.entryText)}</div>`:'')}
+function srcLine(it){return it.link?`<div class="small mut">出处：<a href="${esc(it.link)}" target="_blank">${esc(it.linkText||it.link)}</a></div>`:''}
+function rushItemHtml(it){
+  const days=daysUntil(it.date),d=new Date(it.date+'T00:00:00');
+  const verb=it.cdVerb||((it.type==='exam-online'||it.type==='exam-offline')?'开考':'开始');
+  const cd=days===0?`<span class="cdnum">今天</span>`:`<span class="cdnum">${days}</span><span class="cdunit">天后</span>`;
+  return `<div class="card rcard"><div class="rline1">${cd}<span class="rtitle">${esc(it.company||'')} · ${esc(it.title||'')}</span></div>
+    <div class="rtime">${d.getMonth()+1}月${d.getDate()}日（周${WD[d.getDay()]}）${it.time?' '+esc(it.time):''} ${verb}</div>
+    ${it.status?`<div class="small mut">状态：${esc(it.status)}</div>`:''}
+    ${it.detail?`<div class="descr">${esc(it.detail)}</div>`:''}${entryLine(it)}${srcLine(it)}
+    <div class="ops">${schedOps(it)}</div></div>`;
+}
+function itemHtml(it){
+  return `<div class="card item"><span class="when">${esc(it.company||'')}</span> · ${esc(it.title||'')}
+    <span class="tag">${esc(TL[it.type]||it.type||'')}</span>
+    ${it.date?`<span class="small">${esc(it.date)}${it.dateEnd?' ~ '+esc(it.dateEnd):''} ${esc(it.time||'')}</span>`:''}
+    ${it.status?`<div class="small mut">状态：${esc(it.status)}</div>`:''}
+    ${it.detail?`<div class="descr">${esc(it.detail)}</div>`:''}${entryLine(it)}${srcLine(it)}
+    <div class="ops">${schedOps(it)}</div></div>`;
+}
+function renderSched(){
+  const live=DB.schedule.filter(visible);
+  const byDT=(a,b)=>(a.date+(a.time||''))<(b.date+(b.time||''))?-1:1;
+  const rush=live.filter(x=>x.date&&FIVE.includes(x.type)).sort(byDT);
+  const dated=live.filter(x=>x.date).sort(byDT);
+  const nodate=live.filter(x=>!x.date);
+  const windows=live.filter(x=>x.type==='deadline').length;
+  const now=new Date();
+  let stat1;
+  if(rush.length){
+    const n0=rush[0],days=daysUntil(n0.date);
+    stat1=`<div class="stat"><div class="num red">${days===0?'今天':days+'<span class="u">天</span>'}</div><div class="lab">距最近节点（${esc(n0.company||'')} · ${esc(n0.title||'')}）</div></div>`;
+  }else stat1=`<div class="stat"><div class="num red">—</div><div class="lab">距最近节点（暂无）</div></div>`;
+  $('#sched-main').innerHTML=`
+    <div class="sched-head"><div>
+      <div class="today">今天 <span class="bdate">${now.getMonth()+1}月${now.getDate()}日</span> · 周${WD[now.getDay()]}</div>
+      <div class="sub">关键节点一览</div></div>
+      <span style="flex:1"></span><button class="primary" onclick="openSchedForm()">＋ 新增日程</button><button class="themebtn" onclick="cycleTheme()">${esc(themeLabel())}</button></div>
+    <div class="stats">${stat1}
+      <div class="stat"><div class="num">${windows}<span class="u">个</span></div><div class="lab">待关闭的投递窗口</div></div>
+      <div class="stat"><div class="num">${dated.length}<span class="u">个</span></div><div class="lab">在途日程节点</div></div>
+      <div class="stat"><div class="num">${nodate.length}<span class="u">件</span></div><div class="lab">待通知 · 待处理</div></div>
+    </div>
+    <h2>迫在眉睫</h2>
+    ${rush.length?rush.map(rushItemHtml).join(''):'<p class="mut">暂无</p>'}
+    <h2>时间线 <span class="cnt">在途 · 带日期（${dated.length}）</span></h2>${dated.length?dated.map(itemHtml).join(''):'<p class="mut">暂无</p>'}
+    <h2>无日期待办 <span class="cnt">${nodate.length} 件</span></h2>${nodate.length?nodate.map(itemHtml).join(''):'<p class="mut">暂无</p>'}`;
+}
+let editSchedId=null;
+function openSchedForm(id){
+  editSchedId=id||null;
+  const it=id?DB.schedule.find(x=>x.id===id):null;
+  show('sched');
+  $('#sform-area').innerHTML=`<div class="card frm"><h3 style="margin-top:0">${it?'编辑日程':'新增日程'}</h3>
+    <div class="grid">
+      <div><label>公司 *</label><input type="text" id="sf-company"></div>
+      <div><label>事项名 *</label><input type="text" id="sf-title" placeholder="如 线上笔试 / 终面"></div>
+      <div><label>类型</label><select id="sf-type">${Object.entries(TL).filter(([k])=>k!=='done').map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></div>
+      <div><label>时间段（如 09:00–11:00）</label><input type="text" id="sf-time"></div>
+      <div><label>日期（留空 = 无日期待办）</label><input type="date" id="sf-date"></div>
+      <div><label>结束日期（窗口型事项）</label><input type="date" id="sf-dateend"></div>
+      <div><label>状态</label><input type="text" id="sf-status"></div>
+      <div><label>倒计时动词（开考 / 开始 / 截止）</label><input type="text" id="sf-cdverb"></div>
+      <div><label>行动入口链接</label><input type="url" id="sf-entry" placeholder="https://"></div>
+      <div><label>行动入口文字</label><input type="text" id="sf-entrytext"></div>
+      <div><label>出处链接</label><input type="url" id="sf-link" placeholder="https://"></div>
+      <div><label>出处文字</label><input type="text" id="sf-linktext"></div>
+    </div>
+    <label>详情</label><textarea id="sf-detail"></textarea>
+    <div class="frow"><button class="primary" onclick="submitSchedForm()">${it?'保存修改':'添加日程'}</button><button onclick="closeSForm()">取消</button></div></div>`;
+  if(it){
+    $('#sf-company').value=it.company||'';$('#sf-title').value=it.title||'';$('#sf-type').value=it.type||'todo';
+    $('#sf-time').value=it.time||'';$('#sf-date').value=it.date||'';$('#sf-dateend').value=it.dateEnd||'';
+    $('#sf-status').value=it.status||'';$('#sf-cdverb').value=it.cdVerb||'';
+    $('#sf-entry').value=it.entry||'';$('#sf-entrytext').value=it.entryText||'';
+    $('#sf-link').value=it.link||'';$('#sf-linktext').value=it.linkText||'';
+    $('#sf-detail').value=it.detail||'';
+  }
+  $('#sform-area').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function submitSchedForm(){
+  const company=$('#sf-company').value.trim(),title=$('#sf-title').value.trim();
+  if(!company||!title){toast('公司和事项名必填');return}
+  const data={company,title,type:$('#sf-type').value,time:$('#sf-time').value.trim(),
+    date:$('#sf-date').value||null,dateEnd:$('#sf-dateend').value||null,
+    status:$('#sf-status').value.trim(),cdVerb:$('#sf-cdverb').value.trim(),
+    entry:$('#sf-entry').value.trim(),entryText:$('#sf-entrytext').value.trim(),
+    link:$('#sf-link').value.trim(),linkText:$('#sf-linktext').value.trim(),
+    detail:$('#sf-detail').value.trim()};
+  if(editSchedId){const it=DB.schedule.find(x=>x.id===editSchedId);if(!it)return;Object.assign(it,data);toast('已保存修改')}
+  else{DB.schedule.push(Object.assign({id:nextId(DB.schedule),done:false,dropped:false},data));toast('已添加日程')}
+  editSchedId=null;closeSForm();save();renderAll();
+}
+
+/* ---------------- 数据导出 / 导入 / .ics ---------------- */
+function download(name,content,type){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:type||'text/plain;charset=utf-8'}));
+  a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},400);
+}
+function exportData(){download('秋招数据-'+todayStr()+'.json',JSON.stringify(DB,null,2),'application/json');toast('已导出数据 JSON，可交 AI 维护或留作备份')}
+function importData(input){
+  const f=input.files&&input.files[0];if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{try{
+      const obj=JSON.parse(rd.result);
+      if(!obj||!Array.isArray(obj.cards)||!Array.isArray(obj.records)||!Array.isArray(obj.schedule))throw new Error('bad');
+      DB=norm(obj);closeForm();closeSForm();save();renderAll();toast('导入成功');
+    }catch(e){toast('导入失败：不是有效的数据 JSON')}};
+  rd.readAsText(f);input.value='';
+}
+function buildIcs(){
+  const rows=DB.schedule.filter(it=>it.date&&!it.done&&!it.dropped).sort((a,b)=>a.date<b.date?-1:1);
+  const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//qiuzhao-single//CN'];
+  for(const r of rows){
+    const d=(r.date||'').replace(/-/g,'');if(d.length!==8)continue;
+    const t=(r.time||'').split('–')[0].split('-')[0].trim().replace('：',':');
+    let dt='DTSTART;VALUE=DATE:'+d;
+    const m=t.match(/^(\d{1,2}):(\d{2})/);
+    if(m)dt=`DTSTART:${d}T${String(m[1]).padStart(2,'0')}${m[2]}00`;
+    const title=((r.company?r.company+' · ':'')+(r.title||'')).replace(/\n/g,' ');
+    let desc=(r.detail||'').replace(/\n/g,'\\n');
+    if(r.entry)desc+='\\n入口：'+r.entry;
+    lines.push('BEGIN:VEVENT','UID:item-'+r.id+'@qiuzhao-single','DTSTAMP:20260101T000000Z',dt,'SUMMARY:'+title,'DESCRIPTION:'+desc,'END:VEVENT');
+  }
+  lines.push('END:VCALENDAR');
+  return lines.join('\r\n')+'\r\n';
+}
+function exportIcs(){download('qiuzhao.ics',buildIcs(),'text/calendar');toast('已导出 .ics，可导入手机/电脑日历')}
+
+renderAll();
+</script>
+</body>
+</html>
