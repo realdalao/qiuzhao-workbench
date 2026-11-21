@@ -197,6 +197,11 @@ select.stsel{border:1px solid var(--bd);background:var(--card);color:var(--tx);b
 </div>
 <div class="row" style="margin-top:6px"><span class="small mut">数据保存在本浏览器里；换浏览器、清缓存会丢，请定期点「导出数据」备份。把导出的 JSON 或本文件交给 AI 助手即可帮你维护（文件顶部有给 AI 的说明）。</span></div>
 </header>
+<div id="backupbar" style="display:none;background:#f5c542;color:#1a1a1a;padding:8px 14px;font-size:13px;align-items:center;gap:10px;flex-wrap:wrap">
+<span id="backupbar-text" style="flex:1;min-width:220px"></span>
+<button onclick="exportData()" style="background:#1a1a1a;color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer">立即导出备份</button>
+<button onclick="snoozeBackup()" style="background:transparent;border:1px solid #1a1a1a;color:#1a1a1a;padding:5px 12px;border-radius:6px;cursor:pointer">3 天内不再提醒</button>
+</div>
 <main>
 <div id="view-board">
 <div class="stats">
@@ -269,7 +274,26 @@ function loadDB(){
   return norm(seed);
 }
 let DB=loadDB();
-function save(){DB.savedAt=new Date().toISOString();try{localStorage.setItem(LSKEY,JSON.stringify(DB))}catch(e){toast('本地保存失败，请及时导出数据备份')}}
+function save(){DB.savedAt=new Date().toISOString();try{localStorage.setItem(LSKEY,JSON.stringify(DB))}catch(e){toast('本地保存失败，请及时导出数据备份')}noteChange()}
+/* 备份提醒：改动过且距上次导出超过 7 天（或从未导出）时，顶部横幅提醒导出 */
+const METAKEY='qz-single-meta-v1';
+function loadMeta(){try{return JSON.parse(localStorage.getItem(METAKEY)||'{}')}catch(e){return{}}}
+function saveMeta(m){try{localStorage.setItem(METAKEY,JSON.stringify(m))}catch(e){}}
+function noteChange(){const m=loadMeta();if(!m.firstChangeAt){m.firstChangeAt=Date.now();saveMeta(m)}checkBackup()}
+function checkBackup(){
+  const bar=document.getElementById('backupbar');if(!bar)return;
+  const m=loadMeta();const now=Date.now();const WEEK=7*24*3600*1000;
+  let show=false;
+  if(m.firstChangeAt){
+    const changedSinceExport=!m.lastExportAt||(DB.savedAt&&new Date(DB.savedAt).getTime()>m.lastExportAt);
+    const base=m.lastExportAt||m.firstChangeAt;
+    if(changedSinceExport&&now-base>=WEEK)show=true;
+    if(m.snoozeUntil&&now<m.snoozeUntil)show=false;
+  }
+  bar.style.display=show?'flex':'none';
+  if(show){document.getElementById('backupbar-text').textContent=m.lastExportAt?'你的数据有改动，且距上次导出备份已超过 7 天。数据只存在本浏览器里，清掉就没了，建议现在导出一份。':'你的数据从未导出备份过。数据只存在本浏览器里，清掉就没了，建议现在导出一份。'}
+}
+function snoozeBackup(){const m=loadMeta();m.snoozeUntil=Date.now()+3*24*3600*1000;saveMeta(m);checkBackup()}
 function nextId(arr){return arr.reduce((m,x)=>Math.max(m,x.id||0),0)+1}
 function todayStr(){const t=new Date();return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')}
 function isPaused(cardId,title){return DB.pauses.some(p=>p.cardId===cardId&&p.jobTitle===title)}
@@ -596,7 +620,7 @@ function download(name,content,type){
   a.download=name;document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},400);
 }
-function exportData(){download('秋招数据-'+todayStr()+'.json',JSON.stringify(DB,null,2),'application/json');toast('已导出数据 JSON，可交 AI 维护或留作备份')}
+function exportData(){download('秋招数据-'+todayStr()+'.json',JSON.stringify(DB,null,2),'application/json');const m=loadMeta();m.lastExportAt=Date.now();saveMeta(m);checkBackup();toast('已导出数据 JSON，可交 AI 维护或留作备份')}
 function importData(input){
   const f=input.files&&input.files[0];if(!f)return;
   const rd=new FileReader();
@@ -626,7 +650,7 @@ function buildIcs(){
 }
 function exportIcs(){download('qiuzhao.ics',buildIcs(),'text/calendar');toast('已导出 .ics，可导入手机/电脑日历')}
 
-renderAll();
+renderAll();checkBackup();
 </script>
 </body>
 </html>
