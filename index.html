@@ -9,11 +9,11 @@
   /* 主题：日间白底 / 夜间炭黑底（约 #101010 页底、#1c1c1c 卡面）；强调色按页切换：
      看板页琥珀黄 #f5b90d、日程页蓝。二者都由 body[data-view] 变量驱动。 */
   :root{--bd:#e3ded0;--tx:#1e1e1c;--mut:#6f6a5c;--bg:#f5f4f0;--card:#ffffff;
-        --ok:#0e7a5f;--warn:#b45309;--bad:#c23a30;--red:#d64541;--hov:#f3efe2;--act:#e9e2c8}
+        --ok:#0e7a5f;--warn:#b45309;--bad:#c23a30;--red:#d64541;--u0:#d92d20;--u1:#e07b24;--u2:#b8860b;--hov:#f3efe2;--act:#e9e2c8}
   html[data-theme="dark"]{--bd:#2e2e2e;--tx:#f2f2f0;--mut:#9c9c96;--bg:#101010;--card:#1c1c1c;
-        --hov:#262622;--act:#33332c}
+        --hov:#262622;--act:#33332c;--u0:#ff7a6e;--u1:#ffa53d;--u2:#f0c94a}
   @media (prefers-color-scheme: dark){html[data-theme="auto"]{--bd:#2e2e2e;--tx:#f2f2f0;--mut:#9c9c96;--bg:#101010;--card:#1c1c1c;
-        --hov:#262622;--act:#33332c}}
+        --hov:#262622;--act:#33332c;--u0:#ff7a6e;--u1:#ffa53d;--u2:#f0c94a}}
   body[data-view="board"]{--acc:#f5b90d;--onAcc:#161616;--accTx:#f5b90d;--accSoft:rgba(245,185,13,.14);
         --doneBg:rgba(245,185,13,.16);--doneTx:#f5b90d}
   body[data-view="sched"]{--acc:#2f7bff;--onAcc:#ffffff;--accTx:#4a9eff;--accSoft:rgba(47,123,255,.13);
@@ -61,7 +61,7 @@
   .btabs button.on{background:var(--acc);color:var(--onAcc);border-color:var(--acc);font-weight:600}
   .btabs button.on:hover{color:var(--onAcc);filter:brightness(1.08)}
   /* 分区标题 */
-  h2{font-size:19px;margin:20px 0 12px;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+  h2{font-size:19px;margin:20px 0 12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
   h2 .cnt{font-size:13.5px;color:var(--mut);font-weight:400}
   h3{font-size:14.5px;margin:16px 0 8px}
   h3 .cnt{font-size:12.5px;color:var(--mut);font-weight:400}
@@ -96,6 +96,15 @@
   .sched-head .sub{color:var(--mut);font-size:13.5px;margin-top:3px}
   .rcard .rline1{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
   .cdnum{color:var(--accTx);font-size:29px;font-weight:700;line-height:1}
+  .rcard{border-left:6px solid var(--u2)}
+  .rcard .cdnum{color:var(--u2)}
+  .rcard.u1{border-left-color:var(--u1)}
+  .rcard.u1 .cdnum{color:var(--u1)}
+  .rcard.u0{border-left-color:var(--u0)}
+  .rcard.u0 .cdnum{color:var(--u0)}
+  .rcard.u0{background:color-mix(in srgb,var(--u0) 6%,var(--card))}
+  .rcard.u1{background:color-mix(in srgb,var(--u1) 6%,var(--card))}
+  .rcard.u2{background:color-mix(in srgb,var(--u2) 5%,var(--card))}
   .cdunit{color:var(--mut);font-size:13.5px}
   .rtitle{font-weight:700;font-size:16px}
   .rtime{color:var(--mut);font-size:13.5px;margin-top:7px}
@@ -103,6 +112,36 @@
   .cd{color:var(--accTx);font-weight:700;margin-top:4px}
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:8px 18px;border-radius:20px;opacity:0;transition:.25s;pointer-events:none;z-index:99;max-width:88vw;text-align:center}
   .toast.show{opacity:.94}
+  /* 图标化：内联 SVG 图标与长文折叠 */
+  .ic{width:15px;height:15px;vertical-align:-2.5px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+  .ic.lg{width:19px;height:19px;vertical-align:-3.5px}
+  button .ic{margin-right:4px}
+  button.ibtn{padding:4px 8px}
+  button.ibtn .ic{margin-right:0}
+  .tag .ic{width:12.5px;height:12.5px;vertical-align:-2px;margin-right:3px}
+  .badge .ic{width:12.5px;height:12.5px;vertical-align:-2px;margin-right:3px}
+  .dlbadge .ic{width:13px;height:13px;vertical-align:-2px;margin-right:3px}
+  .stat .lab .ic{margin-right:4px}
+  h2 .ic{margin-right:5px}
+  .distline .ic{margin-right:3px}
+  .clamp{max-height:3.3em;overflow:hidden}
+  .clampwrap.open .clamp{max-height:none}
+  .clampbtn{display:inline-flex;align-items:center;gap:1px;color:var(--accTx);background:none;border:none;padding:2px 8px;font-size:12.5px;margin-top:2px}
+  .clampbtn .ic{margin-right:0;transition:transform .15s}
+  .clampwrap.open .clampbtn .ic{transform:rotate(180deg)}
+  /* 对齐修正：图标与文字一律 flex 居中，消除基线漂移；折叠改精确两行裁切 */
+  button{display:inline-flex;align-items:center;justify-content:center}
+  .tag,.badge,.dlbadge{display:inline-flex;align-items:center;gap:3px}
+  .tag .ic,.badge .ic,.dlbadge .ic{margin-right:0}
+  .stat .lab{display:flex;align-items:flex-start;gap:4px}
+  .stat .lab .ic{margin-right:0;margin-top:2.5px}
+  .iline{display:flex;align-items:center;gap:4px}
+  .rush .rtime{display:flex;align-items:center;gap:5px}
+  .job .m{display:inline-flex;align-items:center;gap:2px;vertical-align:middle}
+  .dst{display:inline-flex;align-items:center;gap:3px}
+  .dst .ic{margin-right:0}
+  .clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;max-height:none}
+  .clampwrap.open .clamp{display:block;-webkit-line-clamp:unset}
 </style>
 <!--
 ════════════════════════════════════════════════════════════════════
@@ -185,17 +224,17 @@ select.stsel{border:1px solid var(--bd);background:var(--card);color:var(--tx);b
 <div class="row">
 <h1>秋招工作台</h1>
 <span class="tabs">
-<button id="tab-board" class="on" onclick="show('board')">投递看板</button>
-<button id="tab-sched" onclick="show('sched')">日程表</button>
+<button id="tab-board" class="on" onclick="show('board')"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>投递看板</button>
+<button id="tab-sched" onclick="show('sched')"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>日程表</button>
 </span>
 <span style="flex:1"></span>
-<button class="primary" onclick="openCardForm()">＋ 新增公司卡</button>
-<button onclick="exportData()">导出数据</button>
-<button onclick="document.getElementById('importfile').click()">导入数据</button>
+<button class="primary" onclick="openCardForm()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>新增卡</button>
+<button onclick="exportData()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>导出</button>
+<button onclick="document.getElementById('importfile').click()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>导入</button>
 <input type="file" id="importfile" accept=".json,application/json" style="display:none" onchange="importData(this)">
-<button onclick="exportIcs()">导出.ics</button>
+<button onclick="exportIcs()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>.ics</button>
 </div>
-<div class="row" style="margin-top:6px"><span class="small mut">数据保存在本浏览器里；换浏览器、清缓存会丢，请定期点「导出数据」备份。把导出的 JSON 或本文件交给 AI 助手即可帮你维护（文件顶部有给 AI 的说明）。</span></div>
+<div class="row" style="margin-top:6px"><span class="small mut">数据保存在本浏览器里；换浏览器、清缓存会丢，请定期点「导出」备份。把导出的 JSON 或本文件交给 AI 助手即可帮你维护（文件顶部有给 AI 的说明）。</span></div>
 </header>
 <div id="backupbar" style="display:none;background:#f5c542;color:#1a1a1a;padding:8px 14px;font-size:13px;align-items:center;gap:10px;flex-wrap:wrap">
 <span id="backupbar-text" style="flex:1;min-width:220px"></span>
@@ -206,16 +245,20 @@ select.stsel{border:1px solid var(--bd);background:var(--card);color:var(--tx);b
 <div id="view-board">
 <div class="stats">
 <div class="stat"><div class="num" id="st-open">–</div><div class="lab" id="st-openlab">待投递（家）</div></div>
-<div class="stat"><div class="num" id="st-rec">–</div><div class="lab">已投（条）</div></div>
-<div class="stat"><div class="num" id="st-exam">–</div><div class="lab">笔试 · 面试</div></div>
-<div class="stat"><div class="num" id="st-pause">–</div><div class="lab">暂缓岗位（个）</div></div>
+<div class="stat"><div class="num" id="st-rec">–</div><div class="lab"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>已投（条）</div></div>
+<div class="stat"><div class="num" id="st-exam">–</div><div class="lab"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>笔试 · 面试</div></div>
+<div class="stat"><div class="num" id="st-lead">–</div><div class="lab"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 9 12 4 2 9l10 5 10-5z"/><path d="M6 11.5V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-4.5"/><path d="M22 9v5"/></svg>待投线索</div></div>
 </div>
 <div class="distline"><span id="distline"></span><span style="flex:1"></span><button class="themebtn" onclick="cycleTheme()"></button></div>
-<input class="search" id="bq" type="search" placeholder="搜索整个看板：公司、岗位、城市或状态" oninput="Q=this.value;applySearch()">
+<input class="search" id="bq" type="search" placeholder="搜索公司、岗位、城市、状态" oninput="Q=this.value;applySearch()">
 <nav class="btabs" id="btabs"></nav>
 <div id="form-area"></div>
 <section class="panel" id="panel-apply"></section>
-<section class="panel" id="panel-records" style="display:none"></section>
+<section class="panel" id="panel-leads" style="display:none"></section>
+    <section class="panel" id="panel-interview" style="display:none"></section>
+    <section class="panel" id="panel-test" style="display:none"></section>
+    <section class="panel" id="panel-rush" style="display:none"></section>
+    <section class="panel" id="panel-records" style="display:none"></section>
 <section class="panel" id="panel-verify" style="display:none"></section>
 <section class="panel" id="panel-excluded" style="display:none"></section>
 </div>
@@ -249,6 +292,44 @@ select.stsel{border:1px solid var(--bd);background:var(--card);color:var(--tx);b
 <script id="app-script">
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const IC={
+pin:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+brief:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>',
+ext:'<path d="M15 3h6v6M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/>',
+link:'<path d="M9 17H7A5 5 0 0 1 7 7h2M15 7h2a5 5 0 1 1 0 10h-2M8 12h8"/>',
+info:'<circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/>',
+check:'<path d="M20 6 9 17l-5-5"/>',
+x:'<path d="M18 6 6 18M6 6l12 12"/>',
+xcirc:'<circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/>',
+pause:'<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
+play:'<path d="m6 4 14 8-14 8V4z"/>',
+pencil:'<path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+trash:'<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>',
+plus:'<path d="M12 5v14M5 12h14"/>',
+chev:'<path d="m6 9 6 6 6-6"/>',
+users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
+pen:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+clip:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/>',
+spark:'<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z"/>',
+mega:'<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>',
+ban:'<circle cx="12" cy="12" r="9"/><path d="m5.6 5.6 12.8 12.8"/>',
+send:'<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
+inbox:'<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.1 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.7 4H7.3a2 2 0 0 0-1.8 1.1z"/>',
+flame:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.1-2.2-.2-4.2 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.2.5-2.4 1-3 .5 1 1 2 2.5 3.5z"/>',
+list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+cap:'<path d="M22 9 12 4 2 9l10 5 10-5z"/><path d="M6 11.5V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-4.5"/><path d="M22 9v5"/>',
+target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.3 11.3 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
+half:'<circle cx="12" cy="12" r="9"/><path d="M12 3v18a9 9 0 0 0 0-18z" fill="currentColor" stroke="none"/>',
+dot:'<circle cx="12" cy="12" r="4"/>'};
+function ic(n,cls){return `<svg class="ic ${cls||''}" viewBox="0 0 24 24" aria-hidden="true">${IC[n]||IC.dot}</svg>`}
+function themeIc(){const m=document.documentElement.dataset.theme||'auto';return m==='dark'?'moon':m==='light'?'sun':'half'}
+function clampHtml(txt,cls){const t=String(txt||'');if(t.length<=90)return `<div class="${cls}">${esc(t)}</div>`;return `<div class="clampwrap"><div class="${cls} clamp">${esc(t)}</div><button class="clampbtn" onclick="toggleClamp(this)">${ic('chev')}<span>展开</span></button></div>`}
+function toggleClamp(b){const w=b.closest('.clampwrap');if(!w)return;w.classList.toggle('open');b.querySelector('span').textContent=w.classList.contains('open')?'收起':'展开'}
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2200)}
 function show(v){document.body.dataset.view=v;$('#view-board').style.display=v==='board'?'':'none';$('#view-sched').style.display=v==='sched'?'':'none';$('#tab-board').classList.toggle('on',v==='board');$('#tab-sched').classList.toggle('on',v==='sched')}
 
@@ -256,7 +337,7 @@ function show(v){document.body.dataset.view=v;$('#view-board').style.display=v==
 const THEMES=['auto','light','dark'];
 function effDark(){const m=document.documentElement.dataset.theme||'auto';return m==='dark'||(m==='auto'&&window.matchMedia('(prefers-color-scheme: dark)').matches)}
 function themeLabel(){const m=document.documentElement.dataset.theme||'auto';if(m==='auto')return '自动 · '+(effDark()?'夜间':'日间');return m==='dark'?'夜间模式':'日间模式'}
-function paintThemeBtn(){document.querySelectorAll('.themebtn').forEach(b=>b.textContent=themeLabel())}
+function paintThemeBtn(){document.querySelectorAll('.themebtn').forEach(b=>b.innerHTML=ic(themeIc())+esc(themeLabel()))}
 function cycleTheme(){const cur=document.documentElement.dataset.theme||'auto';const nx=THEMES[(THEMES.indexOf(cur)+1)%3];document.documentElement.dataset.theme=nx;localStorage.setItem('qz-theme',nx);paintThemeBtn();toast('已切换为'+themeLabel())}
 
 /* ================= 数据层（CORE） =================
@@ -265,7 +346,7 @@ function cycleTheme(){const cur=document.documentElement.dataset.theme||'auto';c
 const LSKEY='qz-single-db-v1';
 const STATUSES=['投递中','笔试','面试','未通过'];
 function seedData(){return JSON.parse(document.getElementById('qz-seed').textContent)}
-function norm(d){d=d||{};d.cards=d.cards||[];d.records=d.records||[];d.pauses=d.pauses||[];d.verify=d.verify||[];d.excluded=d.excluded||[];d.schedule=d.schedule||[];return d}
+function norm(d){d=d||{};d.cards=d.cards||[];d.records=d.records||[];d.pauses=d.pauses||[];d.verify=d.verify||[];d.excluded=d.excluded||[];d.schedule=d.schedule||[];d.leads=d.leads||[];d.interview=d.interview||[];d.test=d.test||[];d.rush=d.rush||[];d.leadGroups=d.leadGroups||[];d.leadLinks=d.leadLinks||{};d.leadExtraTags=d.leadExtraTags||{};d.pipelineDef=d.pipelineDef||[];return d}
 function loadDB(){
   const seed=seedData();
   let local=null;
@@ -337,12 +418,14 @@ function schedDone(id){const it=DB.schedule.find(x=>x.id===id);if(!it)return;it.
 function schedDrop(id){DB.schedule=DB.schedule.filter(x=>x.id!==id);save();renderAll();toast('已放弃 · 已落账生效')}
 /* ================= /CORE ================= */
 
-function linkLine(l){const t=l.href?`<a href="${esc(l.href)}" target="_blank">${esc(l.text||l.href)}</a>`:esc(l.text||'');return `<div class="small">${esc(l.before||'')}${t}${esc(l.after||'')}</div>`}
+function metaLine(m){if(!m)return'';const t=m.href?`<a href="${esc(m.href)}" target="_blank">${esc(m.text||m.href)}</a>`:esc(m.text||'');return `<div class="small iline">${ic('info')}${esc(m.before||'')}${t}${esc(m.after||'')}</div>`}
+function linkLine(l){const t=l.href?`<a href="${esc(l.href)}" target="_blank">${esc(l.text||l.href)}</a>`:esc(l.text||'');return `<div class="small iline">${ic('ext')}${esc(l.before||'')}${t}${esc(l.after||'')}</div>`}
 function renderAll(){renderBoard();renderSched();paintThemeBtn()}
 
 /* ---------------- 看板 ---------------- */
 let BTAB='apply',Q='';
-const BTABS=[['apply','待投递'],['records','全部已投'],['verify','备选 · 待核实'],['excluded','已排除']];
+const BTABS=[['apply','待投递'],['leads','待投线索'],['interview','面试中'],['test','笔试中'],['rush','冲刺项'],['verify','备选'],['records','全部已投'],['excluded','已排除 · 待核实']];
+const TABIC={apply:'brief',leads:'cap',interview:'users',test:'pen',rush:'target',verify:'eye',records:'list',excluded:'ban'};
 function setBTab(t){BTAB=t;document.querySelectorAll('#btabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));BTABS.forEach(([k])=>{const el=$('#panel-'+k);if(el)el.style.display=k===t?'':'none'});applySearch()}
 function applySearch(){
   const q=Q.trim().toLowerCase(),panel=$('#panel-'+BTAB);if(!panel)return;
@@ -355,39 +438,40 @@ function renderHead(){
   const cnt=openCounts(),sc={};
   DB.records.forEach(r=>sc[r.status]=(sc[r.status]||0)+1);
   $('#st-open').textContent=cnt.openCards;
-  $('#st-openlab').textContent=`待投递（家）· ${cnt.openJobs} 岗`;
+  $('#st-openlab').innerHTML=ic('brief')+`待投递（家）· ${cnt.openJobs} 岗`;
   $('#st-rec').textContent=DB.records.length;
   $('#st-exam').textContent=(sc['笔试']||0)+(sc['面试']||0);
-  $('#st-pause').textContent=DB.pauses.length;
-  const parts=STATUSES.filter(k=>sc[k]).map(k=>`${k} <b>${sc[k]}</b>`);
-  Object.keys(sc).filter(k=>!STATUSES.includes(k)).forEach(k=>parts.push(`${esc(k)} <b>${sc[k]}</b>`));
-  parts.push(`暂缓 <b>${DB.pauses.length}</b> 个岗位`);
-  $('#distline').innerHTML='状态分布：'+parts.join(' · ');
+  $('#st-lead').textContent=DB.leads.length;
+  const SIC={'投递中':'send','笔试':'pen','面试':'users','未通过':'xcirc'};
+  const parts=STATUSES.filter(k=>sc[k]).map(k=>`${ic(SIC[k]||'dot')}${k} <b>${sc[k]}</b>`);
+  Object.keys(sc).filter(k=>!STATUSES.includes(k)).forEach(k=>parts.push(`${ic('dot')}${esc(k)} <b>${sc[k]}</b>`));
+  parts.push(`${ic('pause')}暂缓 <b>${DB.pauses.length}</b>`);
+  $('#distline').innerHTML=parts.map(p=>`<span class="dst">${p}</span>`).join(' · ');
 }
 function cardHtml(c,no){
   const jobsHtml=c.jobs.map((j,idx)=>{
     let ops='';
-    if(isPaused(c.id,j.title))ops=`<div class="ops"><span class="badge pause">暂缓中</span>
-      <button onclick="unpauseIdx(${c.id},${idx})">取消暂缓</button></div>`;
+    if(isPaused(c.id,j.title))ops=`<div class="ops"><span class="badge pause">${ic('pause')}暂缓中</span>
+      <button onclick="unpauseIdx(${c.id},${idx})">${ic('play')}取消暂缓</button></div>`;
     else ops=`<div class="ops">
-      <button class="primary" onclick="markJob(${c.id},${idx},'applied')">已投递</button>
-      <button onclick="markJob(${c.id},${idx},'dropped')">放弃</button>
-      <button onclick="markJob(${c.id},${idx},'paused')">暂缓</button></div>`;
-    return `<div class="job"><span class="t">${esc(j.title)}</span> <span class="m">${esc(j.meta||'')}</span>
-      ${j.desc?`<div class="d">${esc(j.desc)}</div>`:''}${ops}</div>`}).join('');
-  const dl=c.deadline?`截止 ${esc(c.deadline)}`:(c.rolling?'招满即止':'无公布截止 · 排在最后');
+      <button class="primary" onclick="markJob(${c.id},${idx},'applied')">${ic('check')}已投</button>
+      <button onclick="markJob(${c.id},${idx},'dropped')">${ic('x')}放弃</button>
+      <button onclick="markJob(${c.id},${idx},'paused')">${ic('pause')}暂缓</button></div>`;
+    return `<div class="job"><span class="t">${esc(j.title)}</span> <span class="m">${j.meta?ic('pin')+esc(j.meta):''}</span>
+      ${j.desc?clampHtml(j.desc,'d'):''}${ops}</div>`}).join('');
+  const dl=c.deadline?esc(c.deadline):(c.rolling?'招满即止':'无截止');
   const q=(c.company+' '+(c.unit||'')+' '+(c.descr||'')+' '+c.jobs.map(j=>j.title+' '+(j.meta||'')).join(' ')+' '+(c.tags||[]).join(' ')).toLowerCase();
   return `<div class="card flt" data-q="${esc(q)}"><div class="chead"><span class="no">${no}</span><span class="co">${esc(c.company)}</span> <span class="unit">${esc(c.unit||'')}</span>
-    <span style="flex:1"></span><button class="mini" onclick="openCardForm(${c.id})">编辑</button><button class="mini btn-drop" onclick="deleteCard(${c.id})">删除</button></div>
-    <div><span class="dlbadge">${dl}</span></div>
-    ${c.descr?`<div class="descr">${esc(c.descr)}</div>`:''}
+    <span style="flex:1"></span><button class="mini ibtn" title="编辑" onclick="openCardForm(${c.id})">${ic('pencil')}</button><button class="mini ibtn btn-drop" title="删除" onclick="deleteCard(${c.id})">${ic('trash')}</button></div>
+    <div><span class="dlbadge">${ic('clock')}${dl}</span></div>
+    ${c.descr?clampHtml(c.descr,'descr'):''}
     ${jobsHtml}
     ${(c.links&&c.links.length)?`<div class="links">${c.links.map(linkLine).join('')}</div>`:''}
     ${(c.tags&&c.tags.length)?`<div class="tagrow">${c.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:''}</div>`;
 }
 function renderBoard(){
   renderHead();
-  $('#btabs').innerHTML=BTABS.map(([k,label])=>`<button data-t="${k}" class="${k===BTAB?'on':''}" onclick="setBTab('${k}')">${label}</button>`).join('');
+  $('#btabs').innerHTML=BTABS.map(([k,label])=>`<button data-t="${k}" class="${k===BTAB?'on':''}" onclick="setBTab('${k}')">${ic(TABIC[k]||'dot')}${label}</button>`).join('');
   const cards=[...DB.cards].sort((a,b)=>{if(a.deadline&&b.deadline)return a.deadline<b.deadline?-1:1;if(a.deadline)return -1;if(b.deadline)return 1;return a.id-b.id});
   let openHtml='',pauseHtml='',no=0;
   for(const c of cards){
@@ -398,20 +482,35 @@ function renderBoard(){
   }
   const cnt=openCounts();
   $('#panel-apply').innerHTML=`
-    <h2>待投递 <span class="cnt">${cnt.openCards} 家 · ${cnt.openJobs} 个岗位　另暂缓 ${DB.pauses.length} 个岗位　按报名截止从早到晚自动排序</span></h2>
+    <h2>${ic('brief','lg')}待投递 <span class="cnt">${cnt.openCards} 家 · ${cnt.openJobs} 岗 · 暂缓 ${DB.pauses.length}</span></h2>
     ${openHtml||'<p class="mut">无</p>'}
-    ${pauseHtml?`<h2>暂缓投递 <span class="cnt">${DB.pauses.length} 个岗位</span></h2>${pauseHtml}`:''}`;
+    ${pauseHtml?`<h2>${ic('pause','lg')}暂缓投递 <span class="cnt">${DB.pauses.length} 个</span></h2>${pauseHtml}`:''}`;
   const recs=sortedRecords();
-  $('#panel-records').innerHTML=`<h2>全部已投 <span class="cnt">${recs.length} 条 · 按投递日期倒序、无日期置末尾</span></h2>
-    <div style="margin:0 0 10px"><button onclick="openRecordForm()">＋ 新增已投记录</button></div>
-    <table><tr><th>日期</th><th>公司</th><th>岗位</th><th>地点</th><th>状态</th><th>备注</th><th></th></tr>${recs.map(r=>`<tr class="flt" data-q="${esc((r.company+' '+r.job+' '+(r.location||'')+' '+(r.status||'')).toLowerCase())}"><td>${esc(r.appliedOn||'—')}</td><td>${esc(r.company)}</td><td>${r.url?`<a href="${esc(r.url)}" target="_blank">${esc(r.job)}</a>`:esc(r.job)}</td><td>${esc(r.location||'')}</td><td><select class="stsel st-${esc(r.status)}" onchange="setRecStatus(${r.id},this.value)">${STATUSES.map(s=>`<option ${s===r.status?'selected':''}>${s}</option>`).join('')}</select></td><td class="small mut">${esc((r.note||'').slice(0,80))}</td><td><button class="mini btn-drop" onclick="delRecord(${r.id})">删除</button></td></tr>`).join('')}</table>`;
-  $('#panel-verify').innerHTML=`<h2>备选 <span class="cnt">${DB.verify.length} 条 · 待核实</span></h2>
+  $('#panel-records').innerHTML=`<h2>${ic('list','lg')}全部已投 <span class="cnt">${recs.length} 条</span></h2>
+    <div style="margin:0 0 10px"><button onclick="openRecordForm()">${ic('plus')}新增记录</button></div>
+    <table><tr><th>日期</th><th>公司</th><th>岗位</th><th>地点</th><th>状态</th><th>备注</th><th></th></tr>${recs.map(r=>`<tr class="flt" data-q="${esc((r.company+' '+r.job+' '+(r.location||'')+' '+(r.status||'')).toLowerCase())}"><td>${esc(r.appliedOn||'—')}</td><td>${esc(r.company)}</td><td>${r.url?`<a href="${esc(r.url)}" target="_blank">${esc(r.job)}</a>`:esc(r.job)}</td><td>${esc(r.location||'')}</td><td><select class="stsel st-${esc(r.status)}" onchange="setRecStatus(${r.id},this.value)">${STATUSES.map(s=>`<option ${s===r.status?'selected':''}>${s}</option>`).join('')}</select></td><td class="small mut">${esc((r.note||'').slice(0,80))}</td><td><button class="mini ibtn btn-drop" title="删除" onclick="delRecord(${r.id})">${ic('trash')}</button></td></tr>`).join('')}</table>`;
+  $('#panel-verify').innerHTML=`<h2>${ic('eye','lg')}备选 <span class="cnt">${DB.verify.length} 条</span></h2>
     <div class="frm" style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px">
       <input type="text" id="vf-who" placeholder="对象（如公司名）" style="flex:1;min-width:140px">
       <input type="text" id="vf-why" placeholder="卡点 / 待核实原因" style="flex:2;min-width:200px">
-      <button class="primary" onclick="submitVerify()">加入备选</button></div>
-    <table><tr><th>对象</th><th>卡点</th><th></th></tr>${DB.verify.map(v=>`<tr class="flt" data-q="${esc((v.who+' '+v.why).toLowerCase())}"><td>${esc(v.who)}</td><td class="small">${esc(v.why)}</td><td><button class="mini btn-drop" onclick="delVerify(${v.id})">删除</button></td></tr>`).join('')}</table>`;
-  $('#panel-excluded').innerHTML=`<h2>已排除 <span class="cnt">${DB.excluded.length} 条</span></h2><table><tr><th>公司/岗位</th><th>原因</th><th></th></tr>${DB.excluded.map(e=>`<tr class="flt" data-q="${esc((e.who+' '+e.why).toLowerCase())}"><td>${esc(e.who)}</td><td class="small">${esc(e.why)}</td><td><button class="mini btn-drop" onclick="delExcluded(${e.id})">删除</button></td></tr>`).join('')}</table>`;
+      <button class="primary" onclick="submitVerify()">${ic('plus')}加入</button></div>
+    <table><tr><th>对象</th><th>卡点</th><th></th></tr>${DB.verify.map(v=>`<tr class="flt" data-q="${esc((v.who+' '+v.why).toLowerCase())}"><td>${esc(v.who)}</td><td class="small">${esc(v.why)}</td><td><button class="mini ibtn btn-drop" title="删除" onclick="delVerify(${v.id})">${ic('trash')}</button></td></tr>`).join('')}</table>`;
+  $('#panel-excluded').innerHTML=`<h2>${ic('ban','lg')}已排除 <span class="cnt">${DB.excluded.length} 条</span></h2><table><tr><th>公司/岗位</th><th>原因</th><th></th></tr>${DB.excluded.map(e=>`<tr class="flt" data-q="${esc((e.who+' '+e.why).toLowerCase())}"><td>${esc(e.who)}</td><td class="small">${esc(e.why)}</td><td><button class="mini ibtn btn-drop" title="删除" onclick="delExcluded(${e.id})">${ic('trash')}</button></td></tr>`).join('')}</table>`;
+
+  const groups=(DB.leadGroups&&DB.leadGroups.length)?DB.leadGroups:[{key:'A',title:'A 组'},{key:'B',title:'B 组'},{key:'C',title:'C 组'},{key:'D',title:'D 组'}];
+  const leadLinkHtml=Object.entries(DB.leadLinks||{}).map(([co,l])=>`<div class="small">${esc(co)}：<a href="${esc(l.href)}" target="_blank">${esc(l.label||l.href)}</a></div>`).join('');
+  let leadHtml=leadLinkHtml;const seenG=new Set();
+  const leadRow=l=>`<tr class="flt" data-q="${esc((l.company+' '+(l.job||'')+' '+(l.location||'')+' '+(l.note||'')).toLowerCase())}"><td>${esc(l.company)}${(DB.leadExtraTags&&DB.leadExtraTags[l.company]||[]).map(t=>` <span class="tag hot">${esc(t)}</span>`).join('')}</td><td>${esc(l.job||'')}</td><td>${esc(l.location||'')}</td><td>${esc(l.deadlineText||'')}</td><td class="small">${esc(l.req||'')}</td><td class="small">${esc(l.note||'')}</td><td class="small mut">${esc(l.src||'')}</td></tr>`;
+  for(const g of groups){const rows=DB.leads.filter(l=>l.groupKey===g.key);seenG.add(g.key);if(!rows.length)continue;
+    leadHtml+=`<div class="leadgroup"><h3>${esc(g.title)}${g.note?` <span class="cnt">· ${esc(g.note)}</span>`:''} <span class="cnt">（${rows.length}）</span></h3><table><tr><th>公司</th><th>岗位</th><th>地点</th><th>截止</th><th>要求</th><th>核实进展</th><th>来源</th></tr>${rows.map(leadRow).join('')}</table></div>`}
+  const restLeads=DB.leads.filter(l=>!seenG.has(l.groupKey));
+  if(restLeads.length)leadHtml+=`<div class="leadgroup"><h3>未分组 <span class="cnt">（${restLeads.length}）</span></h3><table><tr><th>公司</th><th>岗位</th><th>地点</th><th>截止</th><th>核实进展</th></tr>${restLeads.map(l=>`<tr class="flt" data-q="${esc((l.company+' '+(l.job||'')).toLowerCase())}"><td>${esc(l.company)}</td><td>${esc(l.job||'')}</td><td>${esc(l.location||'')}</td><td>${esc(l.deadlineText||'')}</td><td class="small">${esc(l.note||'')}</td></tr>`).join('')}</table></div>`;
+  $('#panel-leads').innerHTML=`<h2>${ic('cap','lg')}待投线索 <span class="cnt">${DB.leads.length} 条</span></h2>${leadHtml}`;
+  const stageCard=(v,i)=>`<div class="card flt" data-q="${esc((v.company+' '+v.job).toLowerCase())}"><div class="chead"><span class="no">${i+1}</span><span class="co" style="font-size:15px">${esc(v.company)}</span> <span class="unit">${esc(v.job)}</span></div>${(v.metas||[]).map(metaLine).join('')}</div>`;
+  $('#panel-interview').innerHTML=`<h2>${ic('users','lg')}面试中 <span class="cnt">${DB.interview.length} 条</span></h2>${DB.interview.map(stageCard).join('')||'<p class="mut">无</p>'}`;
+  $('#panel-test').innerHTML=`<h2>${ic('pen','lg')}笔试中 <span class="cnt">${DB.test.length} 条</span></h2>${DB.test.map(stageCard).join('')||'<p class="mut">无</p>'}`;
+  const rushHtml=DB.rush.map((v,i)=>`<div class="card flt" data-q="${esc((v.title+' '+(v.unit||'')).toLowerCase())}"><div class="chead"><span class="no">${i+1}</span><span class="co" style="font-size:15px">${esc(v.title)}</span> <span class="unit">${esc(v.unit||'')}</span></div><div class="descr">${esc(v.descr||'')}</div>${(v.links||[]).length?`<div class="links">${v.links.map(linkLine).join('')}</div>`:''}${(v.tags&&v.tags.length)?`<div class="tagrow">${v.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:''}</div>`).join('');
+  $('#panel-rush').innerHTML=`<h2>${ic('target','lg')}冲刺项 <span class="cnt">${DB.rush.length} 项</span></h2>${rushHtml||'<p class="mut">无</p>'}`;
   setBTab(BTAB);
 }
 function submitVerify(){const who=$('#vf-who').value.trim(),why=$('#vf-why').value.trim();if(!who){toast('请填对象');return}addVerify(who,why)}
@@ -505,6 +604,8 @@ function submitRecordForm(){
 /* ---------------- 日程表 ---------------- */
 const TL={assess:'线上测评','exam-online':'线上笔试','exam-offline':'线下笔试',ai:'AI测评',interview:'真人面试',talk:'宣讲会',deadline:'网申截止',todo:'待办',done:'已完成'};
 const FIVE=['assess','exam-online','exam-offline','ai','interview'];
+const TYPEIC={assess:'clip','exam-online':'pen','exam-offline':'pen',ai:'spark',interview:'users',talk:'mega',deadline:'clock',todo:'inbox',done:'check'};
+const PIC={'投递中':'send','笔试':'pen','面试':'users','未通过':'xcirc'};
 function finished(it){return it.done||it.dropped||it.type==='done'||/^(已完成|已过期|已结束)/.test(it.status||'')}
 function visible(it){return !finished(it)&&!(it.date&&it.date<todayStr())}
 function daysUntil(ds){const t=new Date();t.setHours(0,0,0,0);const d=new Date(ds+'T00:00:00');return Math.round((d-t)/864e5)}
@@ -516,56 +617,69 @@ function cdText(it){
   return `${days} 天后 · ${d.getMonth()+1} 月 ${d.getDate()} 日${tm}`;
 }
 const WD=['日','一','二','三','四','五','六'];
-function schedOps(it){return `<button class="btn-done" onclick="schedDone(${it.id})">已完成</button>
-  <button onclick="openSchedForm(${it.id})">编辑</button>
-  <button class="btn-drop" onclick="schedDrop(${it.id})">放弃</button>`}
-function entryLine(it){return it.entry?`<div class="small">入口：<a href="${esc(it.entry)}" target="_blank">${esc(it.entryText||it.entry)}</a></div>`:(it.entryText?`<div class="small">入口：${esc(it.entryText)}</div>`:'')}
-function srcLine(it){return it.link?`<div class="small mut">出处：<a href="${esc(it.link)}" target="_blank">${esc(it.linkText||it.link)}</a></div>`:''}
+function schedOps(it){return `<button class="btn-done" onclick="schedDone(${it.id})">${ic('check')}完成</button>
+  <button class="ibtn" title="编辑" onclick="openSchedForm(${it.id})">${ic('pencil')}</button>
+  <button class="btn-drop" onclick="schedDrop(${it.id})">${ic('x')}放弃</button>`}
+function entryLine(it){return it.entry?`<div class="small iline">${ic('ext')}<a href="${esc(it.entry)}" target="_blank">${esc(it.entryText||it.entry)}</a></div>`:(it.entryText?`<div class="small iline">${ic('ext')}${esc(it.entryText)}</div>`:'')}
+function srcLine(it){return it.link?`<div class="small mut iline">${ic('link')}<a href="${esc(it.link)}" target="_blank">${esc(it.linkText||it.link)}</a></div>`:''}
 function rushItemHtml(it){
   const days=daysUntil(it.date),d=new Date(it.date+'T00:00:00');
+  const tier=days<=1?'u0':days<=3?'u1':'u2';
   const verb=it.cdVerb||((it.type==='exam-online'||it.type==='exam-offline')?'开考':'开始');
   const cd=days===0?`<span class="cdnum">今天</span>`:`<span class="cdnum">${days}</span><span class="cdunit">天后</span>`;
-  return `<div class="card rcard"><div class="rline1">${cd}<span class="rtitle">${esc(it.company||'')} · ${esc(it.title||'')}</span></div>
-    <div class="rtime">${d.getMonth()+1}月${d.getDate()}日（周${WD[d.getDay()]}）${it.time?' '+esc(it.time):''} ${verb}</div>
-    ${it.status?`<div class="small mut">状态：${esc(it.status)}</div>`:''}
-    ${it.detail?`<div class="descr">${esc(it.detail)}</div>`:''}${entryLine(it)}${srcLine(it)}
+  return `<div class="card rcard ${tier}"><div class="rline1">${cd}<span class="rtitle">${esc(it.company||'')} · ${esc(it.title||'')}</span></div>
+    <div class="rtime">${ic('cal')}${d.getMonth()+1}月${d.getDate()}日（周${WD[d.getDay()]}）${it.time?' '+esc(it.time):''} ${verb}</div>
+    ${it.status?`<div class="small mut">${esc(it.status)}</div>`:''}
+    ${it.detail?clampHtml(it.detail,'descr'):''}${entryLine(it)}${srcLine(it)}
     <div class="ops">${schedOps(it)}</div></div>`;
 }
 function itemHtml(it){
   return `<div class="card item"><span class="when">${esc(it.company||'')}</span> · ${esc(it.title||'')}
-    <span class="tag">${esc(TL[it.type]||it.type||'')}</span>
-    ${it.date?`<span class="small">${esc(it.date)}${it.dateEnd?' ~ '+esc(it.dateEnd):''} ${esc(it.time||'')}</span>`:''}
-    ${it.status?`<div class="small mut">状态：${esc(it.status)}</div>`:''}
-    ${it.detail?`<div class="descr">${esc(it.detail)}</div>`:''}${entryLine(it)}${srcLine(it)}
+    <span class="tag">${ic(TYPEIC[it.type]||'dot')}${esc(TL[it.type]||it.type||'')}</span>
+    ${it.date?`<span class="small">${ic('cal')}${esc(it.date)}${it.dateEnd?' ~ '+esc(it.dateEnd):''} ${esc(it.time||'')}</span>`:''}
+    ${it.status?`<div class="small mut">${esc(it.status)}</div>`:''}
+    ${it.detail?clampHtml(it.detail,'descr'):''}${entryLine(it)}${srcLine(it)}
     <div class="ops">${schedOps(it)}</div></div>`;
 }
+let SF='all';try{SF=sessionStorage.getItem('qz-sf')||'all'}catch(e){}
+function setSF(t){SF=t;try{sessionStorage.setItem('qz-sf',t)}catch(e){}renderSched();}
 function renderSched(){
+  const sc2={};DB.records.forEach(r=>sc2[r.status]=(sc2[r.status]||0)+1);
+  const pipeDef=(DB.pipelineDef&&DB.pipelineDef.length)?DB.pipelineDef:[{label:'投递中',color:'#2456c4'},{label:'笔试',color:'#d97706'},{label:'面试',color:'#0e7a5f'},{label:'未通过',color:'#9aa1ad'}];
+  const pipe=pipeDef.filter(p=>p.label!=='待投线索').map(p=>`<span class="dst" style="color:${esc(p.color||'inherit')}">${ic(PIC[p.label]||'dot')}${esc(p.label)} <b>${sc2[p.label]||0}</b></span>`).join(' ｜ ');
   const live=DB.schedule.filter(visible);
+  const inF=x=>SF==='all'||x.type===SF;
   const byDT=(a,b)=>(a.date+(a.time||''))<(b.date+(b.time||''))?-1:1;
-  const rush=live.filter(x=>x.date&&FIVE.includes(x.type)).sort(byDT);
-  const dated=live.filter(x=>x.date).sort(byDT);
-  const nodate=live.filter(x=>!x.date);
+  const rush=live.filter(x=>x.date&&FIVE.includes(x.type)&&inF(x)&&daysUntil(x.date)<=7).sort(byDT);
+  const rushAll=live.filter(x=>x.date&&FIVE.includes(x.type)).sort(byDT);
+  const dated=live.filter(x=>x.date&&inF(x)).sort(byDT);
+  const nodate=live.filter(x=>!x.date&&inF(x));
   const windows=live.filter(x=>x.type==='deadline').length;
+  const cntT=t=>live.filter(x=>x.type===t).length;
+  const chips=[['all','全部'],['assess','线上测评'],['exam-online','线上笔试'],['exam-offline','线下笔试'],['ai','AI测评'],['interview','真人面试'],['talk','宣讲会'],['deadline','网申截止'],['todo','待办']].map(([k,l])=>`<button class="${SF===k?'on':''}" onclick="setSF('${k}')">${ic(k==='all'?'list':(TYPEIC[k]||'dot'))}${l} ${k==='all'?live.length:cntT(k)}</button>`).join('');
   const now=new Date();
   let stat1;
-  if(rush.length){
-    const n0=rush[0],days=daysUntil(n0.date);
-    stat1=`<div class="stat"><div class="num red">${days===0?'今天':days+'<span class="u">天</span>'}</div><div class="lab">距最近节点（${esc(n0.company||'')} · ${esc(n0.title||'')}）</div></div>`;
-  }else stat1=`<div class="stat"><div class="num red">—</div><div class="lab">距最近节点（暂无）</div></div>`;
+  if(rushAll.length){
+    const n0=rushAll[0],days=daysUntil(n0.date);
+    stat1=`<div class="stat"><div class="num red">${days===0?'今天':days+'<span class="u">天</span>'}</div><div class="lab">${ic('flame')}距最近节点（${esc(n0.company||'')} · ${esc(n0.title||'')}）</div></div>`;
+  }else stat1=`<div class="stat"><div class="num red">—</div><div class="lab">${ic('flame')}距最近节点（暂无）</div></div>`;
   $('#sched-main').innerHTML=`
     <div class="sched-head"><div>
       <div class="today">今天 <span class="bdate">${now.getMonth()+1}月${now.getDate()}日</span> · 周${WD[now.getDay()]}</div>
-      <div class="sub">关键节点一览</div></div>
-      <span style="flex:1"></span><button class="primary" onclick="openSchedForm()">＋ 新增日程</button><button class="themebtn" onclick="cycleTheme()">${esc(themeLabel())}</button></div>
+</div>
+      <span style="flex:1"></span><button class="primary" onclick="openSchedForm()">${ic('plus')}新增日程</button><button class="themebtn" onclick="cycleTheme()">${esc(themeLabel())}</button></div>
+    <nav class="btabs" style="margin:2px 0 12px">${chips}</nav>
     <div class="stats">${stat1}
-      <div class="stat"><div class="num">${windows}<span class="u">个</span></div><div class="lab">待关闭的投递窗口</div></div>
-      <div class="stat"><div class="num">${dated.length}<span class="u">个</span></div><div class="lab">在途日程节点</div></div>
-      <div class="stat"><div class="num">${nodate.length}<span class="u">件</span></div><div class="lab">待通知 · 待处理</div></div>
+      <div class="stat"><div class="num">${windows}<span class="u">个</span></div><div class="lab">${ic('clock')}待关闭窗口</div></div>
+      <div class="stat"><div class="num">${dated.length}<span class="u">个</span></div><div class="lab">${ic('cal')}在途节点</div></div>
+      <div class="stat"><div class="num">${nodate.length}<span class="u">件</span></div><div class="lab">${ic('inbox')}待通知 · 待处理</div></div>
     </div>
-    <h2>迫在眉睫</h2>
-    ${rush.length?rush.map(rushItemHtml).join(''):'<p class="mut">暂无</p>'}
-    <h2>时间线 <span class="cnt">在途 · 带日期（${dated.length}）</span></h2>${dated.length?dated.map(itemHtml).join(''):'<p class="mut">暂无</p>'}
-    <h2>无日期待办 <span class="cnt">${nodate.length} 件</span></h2>${nodate.length?nodate.map(itemHtml).join(''):'<p class="mut">暂无</p>'}`;
+    ${pipe?`<h2>${ic('target','lg')}投递进度概览</h2><p>${pipe}</p>`:''}
+    ${SF==='all'?`<h2>${ic('flame','lg')}迫在眉睫</h2><p class="small mut" style="margin:-2px 0 10px"><b style="color:var(--u0)">● 今天/明天</b>　<b style="color:var(--u1)">● 2–3 天</b>　<b style="color:var(--u2)">● 4–7 天</b></p>
+    ${rush.length?rush.map(rushItemHtml).join(''):'<p class="mut">暂无</p>'}`:''}
+    <h2>${ic('cal','lg')}时间线 <span class="cnt">${dated.length}</span></h2>${dated.length?dated.map(itemHtml).join(''):'<p class="mut">暂无</p>'}
+    <h2>${ic('inbox','lg')}无日期待办 <span class="cnt">${nodate.length} 件</span></h2>${nodate.length?nodate.map(itemHtml).join(''):'<p class="mut">暂无</p>'}`;
+  paintThemeBtn();
 }
 let editSchedId=null;
 function openSchedForm(id){
