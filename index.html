@@ -163,6 +163,12 @@ JSON，你改那份 JSON，再让用户点「导入数据」导回；或——
 （ISO 格式，如 2026-11-20T23:30:00），用户下次打开即生效。
 两种方式不要混用同一批改动，避免互相覆盖。
 
+单卡分享格式（页面「分享」按钮导出、导入时自动识别并合并，不覆盖全量数据）：
+{"qz-share":1, kind:"card"|"job", card:{company, unit, deadline, rolling,
+descr, links, tags, jobs:[{title, meta, desc}]}}
+导入合并规则：按 company 同名找已有卡——有则只并入标题未重复的新岗位
+（并补空缺的 deadline/links/descr）；无则新建一张待投递卡（id 取现有最大+1）。
+
 顶层对象：
 { version:1, savedAt:"ISO时间",
 cards:[], records:[], pauses:[], verify:[], excluded:[], schedule:[]}
@@ -325,7 +331,8 @@ target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx
 sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.3 11.3 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
 moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
 half:'<circle cx="12" cy="12" r="9"/><path d="M12 3v18a9 9 0 0 0 0-18z" fill="currentColor" stroke="none"/>',
-dot:'<circle cx="12" cy="12" r="4"/>'};
+dot:'<circle cx="12" cy="12" r="4"/>',
+share:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/>'};
 function ic(n,cls){return `<svg class="ic ${cls||''}" viewBox="0 0 24 24" aria-hidden="true">${IC[n]||IC.dot}</svg>`}
 function themeIc(){const m=document.documentElement.dataset.theme||'auto';return m==='dark'?'moon':m==='light'?'sun':'half'}
 function clampHtml(txt,cls){const t=String(txt||'');if(t.length<=90)return `<div class="${cls}">${esc(t)}</div>`;return `<div class="clampwrap"><div class="${cls} clamp">${esc(t)}</div><button class="clampbtn" onclick="toggleClamp(this)">${ic('chev')}<span>展开</span></button></div>`}
@@ -452,17 +459,19 @@ function cardHtml(c,no){
   const jobsHtml=c.jobs.map((j,idx)=>{
     let ops='';
     if(isPaused(c.id,j.title))ops=`<div class="ops"><span class="badge pause">${ic('pause')}暂缓中</span>
-      <button onclick="unpauseIdx(${c.id},${idx})">${ic('play')}取消暂缓</button></div>`;
+      <button onclick="unpauseIdx(${c.id},${idx})">${ic('play')}取消暂缓</button>
+ <button class="ibtn" title="分享这个岗位" onclick="openShare(${c.id},${idx})">${ic('share')}</button></div>`;
     else ops=`<div class="ops">
       <button class="primary" onclick="markJob(${c.id},${idx},'applied')">${ic('check')}已投</button>
       <button onclick="markJob(${c.id},${idx},'dropped')">${ic('x')}放弃</button>
-      <button onclick="markJob(${c.id},${idx},'paused')">${ic('pause')}暂缓</button></div>`;
+      <button onclick="markJob(${c.id},${idx},'paused')">${ic('pause')}暂缓</button>
+ <button class="ibtn" title="分享这个岗位" onclick="openShare(${c.id},${idx})">${ic('share')}</button></div>`;
     return `<div class="job"><span class="t">${esc(j.title)}</span> <span class="m">${j.meta?ic('pin')+esc(j.meta):''}</span>
       ${j.desc?clampHtml(j.desc,'d'):''}${ops}</div>`}).join('');
   const dl=c.deadline?esc(c.deadline):(c.rolling?'招满即止':'无截止');
   const q=(c.company+' '+(c.unit||'')+' '+(c.descr||'')+' '+c.jobs.map(j=>j.title+' '+(j.meta||'')).join(' ')+' '+(c.tags||[]).join(' ')).toLowerCase();
   return `<div class="card flt" data-q="${esc(q)}"><div class="chead"><span class="no">${no}</span><span class="co">${esc(c.company)}</span> <span class="unit">${esc(c.unit||'')}</span>
-    <span style="flex:1"></span><button class="mini ibtn" title="编辑" onclick="openCardForm(${c.id})">${ic('pencil')}</button><button class="mini ibtn btn-drop" title="删除" onclick="deleteCard(${c.id})">${ic('trash')}</button></div>
+    <span style="flex:1"></span><button class="mini ibtn" title="分享" onclick="openShare(${c.id})">${ic('share')}</button><button class="mini ibtn" title="编辑" onclick="openCardForm(${c.id})">${ic('pencil')}</button><button class="mini ibtn btn-drop" title="删除" onclick="deleteCard(${c.id})">${ic('trash')}</button></div>
     <div><span class="dlbadge">${ic('clock')}${dl}</span></div>
     ${c.descr?clampHtml(c.descr,'descr'):''}
     ${jobsHtml}
@@ -735,11 +744,74 @@ function download(name,content,type){
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},400);
 }
 function exportData(){download('秋招数据-'+todayStr()+'.json',JSON.stringify(DB,null,2),'application/json');const m=loadMeta();m.lastExportAt=Date.now();saveMeta(m);checkBackup();toast('已导出数据 JSON，可交 AI 维护或留作备份')}
+/* 分享：整卡或单个岗位可复制为文本、或导出单卡 JSON；对方导入时合并进待投递，不覆盖其原有数据 */
+let shareObj=null,shareSingle=false;
+function shareCardObj(c,jobIdx){
+const jobs=(typeof jobIdx==='number')?[c.jobs[jobIdx]]:c.jobs;
+return {company:c.company,unit:c.unit||'',deadline:c.deadline||'',rolling:!!c.rolling,descr:c.descr||'',links:c.links||[],tags:c.tags||[],jobs:jobs.map(j=>({title:j.title,meta:j.meta||'',desc:j.desc||''}))};
+}
+function shareText(o){
+const L=[`【岗位分享】${o.company}${o.unit?' · '+o.unit:''}`];
+o.jobs.forEach(j=>{L.push(`岗位：${j.title}${j.meta?'（'+j.meta+'）':''}`);if(j.desc)L.push(`JD 要点：${j.desc}`)});
+L.push(`截止：${o.deadline||(o.rolling?'招满即止':'无公布截止')}`);
+if(o.descr)L.push(`说明：${o.descr}`);
+(o.links||[]).filter(l=>l.href).forEach(l=>L.push(`${l.text||'链接'}：${l.href}`));
+return L.join('\n');
+}
+function openShare(cardId,jobIdx){
+const c=DB.cards.find(x=>x.id===cardId);if(!c)return;
+shareSingle=(typeof jobIdx==='number');shareObj=shareCardObj(c,jobIdx);
+show('board');
+$('#form-area').innerHTML=`<div class="card frm"><h3 style="margin-top:0">分享：${esc(c.company)}${shareSingle?' · '+esc(c.jobs[jobIdx].title):''}</h3>
+<label>分享文本（可直接粘贴发送）</label>
+<textarea id="share-txt" rows="9" readonly>${esc(shareText(shareObj))}</textarea>
+<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+<button class="primary" onclick="copyShare()">复制文本</button>
+<button onclick="exportShare()">导出单卡 JSON</button>
+<button onclick="closeForm()">关闭</button>
+</div>
+<p class="small mut" style="margin-top:8px">把单卡 JSON 发给对方，对方在他的工作台点「导入」即可合并进他的待投递（同名公司自动并入新岗位），不会覆盖他原有的数据。</p></div>`;
+const fa=$('#form-area');if(fa.scrollIntoView)fa.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function copyShare(){
+const t=$('#share-txt');if(!t)return;
+const done=()=>toast('已复制，去粘贴发送吧');
+if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t.value).then(done).catch(()=>{t.select();try{document.execCommand('copy')}catch(e){}done()})}
+else{t.select();try{document.execCommand('copy')}catch(e){}done()}
+}
+function exportShare(){
+if(!shareObj)return;
+const payload={'qz-share':1,kind:shareSingle?'job':'card',card:shareObj};
+const name=('岗位分享-'+shareObj.company+(shareSingle?'-'+shareObj.jobs[0].title:'')+'.json').replace(/[\\/:*?"<>|]/g,'');
+download(name,JSON.stringify(payload,null,2),'application/json');
+toast('已导出单卡 JSON，发给对方导入即可');
+}
+function mergeSharedCard(o){
+if(!o||!o.company||!Array.isArray(o.jobs)||!o.jobs.length)throw new Error('bad share');
+const ex=DB.cards.find(x=>x.company===o.company);
+if(ex){
+let added=0;
+o.jobs.forEach(j=>{if(!ex.jobs.some(e=>e.title===j.title)){ex.jobs.push({title:j.title,meta:j.meta||'',desc:j.desc||''});added++}});
+if(!ex.deadline&&o.deadline)ex.deadline=o.deadline;
+if(!(ex.links&&ex.links.length)&&o.links)ex.links=o.links;
+if(!ex.descr&&o.descr)ex.descr=o.descr;
+return {merged:true,added};
+}
+const nid=DB.cards.reduce((m,x)=>Math.max(m,x.id||0),0)+1;
+DB.cards.push({id:nid,company:o.company,unit:o.unit||'',deadline:o.deadline||'',rolling:!!o.rolling,descr:o.descr||'',links:o.links||[],tags:o.tags||[],jobs:o.jobs.map(j=>({title:j.title,meta:j.meta||'',desc:j.desc||''}))});
+return {merged:false,added:o.jobs.length};
+}
 function importData(input){
   const f=input.files&&input.files[0];if(!f)return;
   const rd=new FileReader();
   rd.onload=()=>{try{
       const obj=JSON.parse(rd.result);
+      if(obj&&obj['qz-share']&&obj.card){
+        const r=mergeSharedCard(obj.card);
+        closeForm();closeSForm();save();renderAll();show('board');setBTab('apply');
+        toast(r.merged?(r.added?`已合并进现有「${obj.card.company}」卡，新增 ${r.added} 个岗位`:`「${obj.card.company}」的岗位你都有了，未重复添加`):`已导入「${obj.card.company}」到待投递`);
+        return;
+      }
       if(!obj||!Array.isArray(obj.cards)||!Array.isArray(obj.records)||!Array.isArray(obj.schedule))throw new Error('bad');
       DB=norm(obj);closeForm();closeSForm();save();renderAll();toast('导入成功');
     }catch(e){toast('导入失败：不是有效的数据 JSON')}};
