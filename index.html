@@ -163,9 +163,11 @@ JSON，你改那份 JSON，再让用户点「导入数据」导回；或——
 （ISO 格式，如 2026-11-20T23:30:00），用户下次打开即生效。
 两种方式不要混用同一批改动，避免互相覆盖。
 
-单卡分享格式（页面「分享」按钮导出、导入时自动识别并合并，不覆盖全量数据）：
+单卡分享格式（页面「分享」按钮生成口令/链接，导入时自动识别并合并，不覆盖全量数据）：
 {"qz-share":1, kind:"card"|"job", card:{company, unit, deadline, rolling,
 descr, links, tags, jobs:[{title, meta, desc}]}}
+口令＝「QZ1.」+ 上述 JSON 的 base64url 编码；分享链接＝在线版地址 + 「#s=」+ 同一编码。
+「口令导入」粘贴整段口令即可（正则提取 QZ1. 段解码）；打开带 #s= 的链接会弹出领取确认。
 导入合并规则：按 company 同名找已有卡——有则只并入标题未重复的新岗位
 （并补空缺的 deadline/links/descr）；无则新建一张待投递卡（id 取现有最大+1）。
 
@@ -237,6 +239,7 @@ select.stsel{border:1px solid var(--bd);background:var(--card);color:var(--tx);b
 <button class="primary" onclick="openCardForm()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>新增卡</button>
 <button onclick="exportData()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>导出</button>
 <button onclick="document.getElementById('importfile').click()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>导入</button>
+<button onclick="openCodeImport()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2M15 7h2a5 5 0 1 1 0 10h-2M8 12h8"/></svg>口令导入</button>
 <input type="file" id="importfile" accept=".json,application/json" style="display:none" onchange="importData(this)">
 <button onclick="exportIcs()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>.ics</button>
 </div>
@@ -766,25 +769,86 @@ $('#form-area').innerHTML=`<div class="card frm"><h3 style="margin-top:0">分享
 <label>分享文本（可直接粘贴发送）</label>
 <textarea id="share-txt" rows="9" readonly>${esc(shareText(shareObj))}</textarea>
 <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-<button class="primary" onclick="copyShare()">复制文本</button>
-<button onclick="exportShare()">导出单卡 JSON</button>
+<button class="primary" onclick="copyShareCode()">复制口令</button>
+<button onclick="copyShare()">复制文本</button>
+<button onclick="copyShareLink()">复制链接</button>
 <button onclick="closeForm()">关闭</button>
 </div>
-<p class="small mut" style="margin-top:8px">把单卡 JSON 发给对方，对方在他的工作台点「导入」即可合并进他的待投递（同名公司自动并入新岗位），不会覆盖他原有的数据。</p></div>`;
+<p class="small mut" style="margin-top:8px">把口令或链接发给对方：对方在工作台点「口令导入」粘贴口令即可领取，链接则直接打开在线版领取。导入都是合并进待投递（同名公司自动并入新岗位），不会覆盖原有数据。</p></div>`;
 const fa=$('#form-area');if(fa.scrollIntoView)fa.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function copyShare(){
 const t=$('#share-txt');if(!t)return;
-const done=()=>toast('已复制，去粘贴发送吧');
-if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t.value).then(done).catch(()=>{t.select();try{document.execCommand('copy')}catch(e){}done()})}
-else{t.select();try{document.execCommand('copy')}catch(e){}done()}
+copyText(t.value,'已复制，去粘贴发送吧');
 }
-function exportShare(){
+function copyText(txt,msg){
+const done=()=>toast(msg||'已复制');
+if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done).catch(()=>{fallbackCopy(txt);done()})}
+else{fallbackCopy(txt);done()}
+}
+function fallbackCopy(txt){
+const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove();
+}
+function sharePayload(){return {'qz-share':1,kind:shareSingle?'job':'card',card:shareObj}}
+function shareCode(){
+const b=btoa(unescape(encodeURIComponent(JSON.stringify(sharePayload())))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+return 'QZ1.'+b;
+}
+function copyShareCode(){
 if(!shareObj)return;
-const payload={'qz-share':1,kind:shareSingle?'job':'card',card:shareObj};
-const name=('岗位分享-'+shareObj.company+(shareSingle?'-'+shareObj.jobs[0].title:'')+'.json').replace(/[\\/:*?"<>|]/g,'');
-download(name,JSON.stringify(payload,null,2),'application/json');
-toast('已导出单卡 JSON，发给对方导入即可');
+copyText(`【秋招工作台 · 岗位口令】${shareObj.company}${shareSingle?' · '+shareObj.jobs[0].title:''}\n${shareCode()}\n复制整段，在秋招工作台点「口令导入」粘贴即可领取`,'口令已复制，发给对方粘贴导入即可');
+}
+function copyShareLink(){
+if(!shareObj)return;
+copyText('https://realdalao.github.io/qiuzhao-workbench/#s='+shareCode().slice(4),'链接已复制，对方打开即可领取');
+}
+function decodeShareCode(code){
+let b=String(code||'').replace(/-/g,'+').replace(/_/g,'/');
+while(b.length%4)b+='=';
+const obj=JSON.parse(decodeURIComponent(escape(atob(b))));
+if(!obj||!obj['qz-share']||!obj.card)throw new Error('bad code');
+return obj;
+}
+function importSharePayload(obj){
+const r=mergeSharedCard(obj.card);
+save();renderAll();show('board');setBTab('apply');
+toast(r.merged?(r.added?`已合并进现有「${obj.card.company}」卡，新增 ${r.added} 个岗位`:`「${obj.card.company}」的岗位你都有了，未重复添加`):`已导入「${obj.card.company}」到待投递`);
+}
+function openCodeImport(){
+show('board');
+$('#form-area').innerHTML=`<div class="card frm"><h3 style="margin-top:0">口令导入</h3>
+<label>把收到的岗位口令整段粘贴到这里</label>
+<textarea id="code-in" rows="5" placeholder="【秋招工作台 · 岗位口令】… QZ1.…"></textarea>
+<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+<button class="primary" onclick="submitCodeImport()">导入</button>
+<button onclick="closeForm()">取消</button>
+</div></div>`;
+const fa=$('#form-area');if(fa.scrollIntoView)fa.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function submitCodeImport(){
+const v=($('#code-in')||{}).value||'';
+const m=v.match(/QZ1\.([A-Za-z0-9\-_]+)/);
+if(!m){toast('没找到有效口令，请粘贴完整口令');return}
+try{const obj=decodeShareCode(m[1]);closeForm();importSharePayload(obj)}
+catch(e){toast('口令解析失败，可能已损坏或不完整')}
+}
+function importFromHash(){
+if(window._hashShare){const o=window._hashShare;window._hashShare=null;closeForm();importSharePayload(o)}
+}
+function checkShareHash(){
+if(!location.hash||location.hash.indexOf('#s=')!==0)return;
+try{
+const obj=decodeShareCode(location.hash.slice(3));
+history.replaceState(null,'',location.pathname+location.search);
+window._hashShare=obj;
+show('board');
+$('#form-area').innerHTML=`<div class="card frm"><h3 style="margin-top:0">收到一个分享岗位</h3>
+<p>${esc(obj.card.company)}${obj.card.unit?' · '+esc(obj.card.unit):''}：${obj.card.jobs.map(j=>esc(j.title)).join('、')}</p>
+<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+<button class="primary" onclick="importFromHash()">导入到待投递</button>
+<button onclick="closeForm()">忽略</button>
+</div></div>`;
+}catch(e){}
 }
 function mergeSharedCard(o){
 if(!o||!o.company||!Array.isArray(o.jobs)||!o.jobs.length)throw new Error('bad share');
@@ -807,9 +871,7 @@ function importData(input){
   rd.onload=()=>{try{
       const obj=JSON.parse(rd.result);
       if(obj&&obj['qz-share']&&obj.card){
-        const r=mergeSharedCard(obj.card);
-        closeForm();closeSForm();save();renderAll();show('board');setBTab('apply');
-        toast(r.merged?(r.added?`已合并进现有「${obj.card.company}」卡，新增 ${r.added} 个岗位`:`「${obj.card.company}」的岗位你都有了，未重复添加`):`已导入「${obj.card.company}」到待投递`);
+        closeForm();closeSForm();importSharePayload(obj);
         return;
       }
       if(!obj||!Array.isArray(obj.cards)||!Array.isArray(obj.records)||!Array.isArray(obj.schedule))throw new Error('bad');
@@ -836,7 +898,7 @@ function buildIcs(){
 }
 function exportIcs(){download('qiuzhao.ics',buildIcs(),'text/calendar');toast('已导出 .ics，可导入手机/电脑日历')}
 
-renderAll();checkBackup();
+renderAll();checkBackup();checkShareHash();
 </script>
 </body>
 </html>
