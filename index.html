@@ -6,22 +6,33 @@
 <title>秋招工作台 · 单文件版</title>
 <script>document.documentElement.dataset.theme=localStorage.getItem('qz-theme')||'auto'</script>
 <style>
-  /* 主题：日间白底 / 夜间炭黑底（约 #101010 页底、#1c1c1c 卡面）；强调色按页切换：
-     看板页琥珀黄 #f5b90d、日程页蓝。二者都由 body[data-view] 变量驱动。 */
-  :root{--bd:#e3ded0;--tx:#1e1e1c;--mut:#6f6a5c;--bg:#f5f4f0;--card:#ffffff;
-        --ok:#0e7a5f;--warn:#b45309;--bad:#c23a30;--red:#d64541;--u0:#d92d20;--u1:#e07b24;--u2:#b8860b;--hov:#f3efe2;--act:#e9e2c8}
-  html[data-theme="dark"]{--bd:#2e2e2e;--tx:#f2f2f0;--mut:#9c9c96;--bg:#101010;--card:#1c1c1c;
-        --hov:#262622;--act:#33332c;--u0:#ff7a6e;--u1:#ffa53d;--u2:#f0c94a}
-  @media (prefers-color-scheme: dark){html[data-theme="auto"]{--bd:#2e2e2e;--tx:#f2f2f0;--mut:#9c9c96;--bg:#101010;--card:#1c1c1c;
-        --hov:#262622;--act:#33332c;--u0:#ff7a6e;--u1:#ffa53d;--u2:#f0c94a}}
-  body[data-view="board"]{--acc:#f5b90d;--onAcc:#161616;--accTx:#f5b90d;--accSoft:rgba(245,185,13,.14);
-        --doneBg:rgba(245,185,13,.16);--doneTx:#f5b90d}
-  body[data-view="sched"]{--acc:#2f7bff;--onAcc:#ffffff;--accTx:#4a9eff;--accSoft:rgba(47,123,255,.13);
-        --doneBg:#10294e;--doneTx:#5ea2ff}
-  html[data-theme="light"] body[data-view="board"]{--accTx:#8a6400;--doneBg:#fdf0cd;--doneTx:#8a6400}
-  @media (prefers-color-scheme: light){html[data-theme="auto"] body[data-view="board"]{--accTx:#8a6400;--doneBg:#fdf0cd;--doneTx:#8a6400}}
-  html[data-theme="light"] body[data-view="sched"]{--accTx:#2563eb;--doneBg:#e2ecff;--doneTx:#2563eb}
-  @media (prefers-color-scheme: light){html[data-theme="auto"] body[data-view="sched"]{--accTx:#2563eb;--doneBg:#e2ecff;--doneTx:#2563eb}}
+  /* 主题：日间白底 / 夜间炭黑底（#0f0f11 页底、#1a1a1d 卡面）。
+     强调色全站统一为蓝，不再按页切换（2026-11-26 收拢）。 */
+  /* ─── 配色令牌（2026-11-26 收拢版）──────────────────────────────
+     单一强调色 + 中性灰阶 + 三个语义色，仅此而已。
+     语义色只允许这三种用途，别处一律用中性色：
+       --danger 今天截止 / 已过期 / 逾期 / 删除
+       --warn   3 天内到期 / 笔试环节
+       --acc    主操作 / 选中态 / 面试环节（在途）
+     --u0/--u1/--u2 是日程倒计时的三档风险，分别指向上面三色。 */
+  :root{--bd:#e2e2e6;--tx:#18181b;--mut:#71717a;--bg:#ffffff;--card:#ffffff;
+        --acc:#2563eb;--onAcc:#ffffff;--accTx:#2563eb;--accSoft:rgba(37,99,235,.08);
+        --hov:#f4f4f5;--act:#e8e8ec;
+        --ok:#0e7a5f;--warn:#b45309;--danger:#c0392b;--bad:#c0392b;--red:#c0392b;
+        --u0:#c0392b;--u1:#b45309;--u2:#71717a;
+        --salbg:#e2f1ea;--saltx:#0b6e4f;--doneBg:#e8eefc;--doneTx:#2456c4}
+  html[data-theme="dark"]{--bd:#2e2e33;--tx:#f2f2f2;--mut:#9a9aa2;--bg:#0f0f11;--card:#1a1a1d;
+        --acc:#4d8bff;--onAcc:#ffffff;--accTx:#7aa7ff;--accSoft:rgba(77,139,255,.14);
+        --hov:#232328;--act:#2f2f36;
+        --ok:#4cc38a;--warn:#f0b354;--danger:#ff7a6e;--bad:#ff7a6e;--red:#ff7a6e;
+        --u0:#ff7a6e;--u1:#f0b354;--u2:#9a9aa2;
+        --salbg:#14342a;--saltx:#4cc38a;--doneBg:#1b2740;--doneTx:#7aa7ff}
+  @media (prefers-color-scheme: dark){html[data-theme="auto"]{--bd:#2e2e33;--tx:#f2f2f2;--mut:#9a9aa2;--bg:#0f0f11;--card:#1a1a1d;
+        --acc:#4d8bff;--onAcc:#ffffff;--accTx:#7aa7ff;--accSoft:rgba(77,139,255,.14);
+        --hov:#232328;--act:#2f2f36;
+        --ok:#4cc38a;--warn:#f0b354;--danger:#ff7a6e;--bad:#ff7a6e;--red:#ff7a6e;
+        --u0:#ff7a6e;--u1:#f0b354;--u2:#9a9aa2;
+        --salbg:#14342a;--saltx:#4cc38a;--doneBg:#1b2740;--doneTx:#7aa7ff}}
   *{box-sizing:border-box} body{margin:0;font:14px/1.55 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--tx)}
   header{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--bd);padding:10px 16px;z-index:9}
   header .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
@@ -45,8 +56,8 @@
   /* 统计卡 */
   .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:6px 0 12px}
   @media (max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
-  .stat{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px 18px}
-  .stat .num{font-size:32px;font-weight:700;line-height:1.15}
+  .stat{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:10px 14px;position:relative;overflow:hidden}
+  .stat .num{font-size:26px;font-weight:700;line-height:1.15}
   .stat .num .u{font-size:15px;font-weight:400;color:var(--mut);margin-left:3px}
   .stat .num.red{color:var(--red)}
   .stat .lab{color:var(--mut);font-size:13px;margin-top:2px}
@@ -72,7 +83,12 @@
   .co{font-size:16.5px;font-weight:700} .unit{color:var(--mut);font-size:13px}
   .dlbadge{display:inline-block;background:var(--hov);color:var(--mut);border-radius:999px;padding:1px 10px;font-size:12.5px;margin:8px 0 2px}
   .descr{color:var(--mut);font-size:13.5px;white-space:pre-wrap;margin:8px 0}
-  .job{padding:10px 0 2px}
+  .intro{display:flex;gap:8px;align-items:flex-start;background:var(--hov);border-radius:10px;padding:9px 12px;color:var(--tx);font-size:13px;line-height:1.55;margin:10px 0 0}
+  .intro .ic{flex:none;margin-top:2px;color:var(--accTx)}
+  .notes{border-left:3px solid var(--bd);padding-left:12px;margin:12px 0 2px}
+  .notes .descr{margin:2px 0}
+  .nlab{display:flex;align-items:center;gap:4px;color:var(--mut);font-size:11.5px;font-weight:600;margin-bottom:2px}
+  .job{border:1px solid var(--bd);border-radius:10px;margin-top:10px;padding:10px 12px;background:color-mix(in srgb,var(--hov) 45%,var(--card))}
   .job .t{font-weight:700;font-size:15px} .job .m{color:var(--mut);font-size:12.5px}
   .job .d{font-size:13.5px;white-space:pre-wrap;margin:5px 0;color:var(--tx)}
   .ops{margin:8px 0 4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -94,22 +110,28 @@
   .today{font-size:27px;font-weight:700;line-height:1.25}
   .today .bdate{color:var(--accTx)}
   .sched-head .sub{color:var(--mut);font-size:13.5px;margin-top:3px}
-  .rcard .rline1{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
-  .cdnum{color:var(--accTx);font-size:29px;font-weight:700;line-height:1}
-  .rcard{border-left:6px solid var(--u2)}
-  .rcard .cdnum{color:var(--u2)}
-  .rcard.u1{border-left-color:var(--u1)}
-  .rcard.u1 .cdnum{color:var(--u1)}
-  .rcard.u0{border-left-color:var(--u0)}
-  .rcard.u0 .cdnum{color:var(--u0)}
-  .rcard.u0{background:color-mix(in srgb,var(--u0) 6%,var(--card))}
-  .rcard.u1{background:color-mix(in srgb,var(--u1) 6%,var(--card))}
-  .rcard.u2{background:color-mix(in srgb,var(--u2) 5%,var(--card))}
-  .cdunit{color:var(--mut);font-size:13.5px}
-  .rtitle{font-weight:700;font-size:16px}
-  .rtime{color:var(--mut);font-size:13.5px;margin-top:7px}
-  .item .when{font-weight:700}
-  .cd{color:var(--accTx);font-weight:700;margin-top:4px}
+  /* 日程行：左栏日期/倒计时 + 公司·标题 + 状态行，收起 ~52px */
+  .srow .rhead{grid-template-columns:54px minmax(0,1fr) auto 16px;column-gap:10px}
+  .srow .rbody{padding-left:76px}   /* 12 头部内边距 + 54 日期栏 + 10 间距：与标题左缘严格对齐 */
+  .srow.hot0{--cdc:var(--danger)}
+  .srow.hot1{--cdc:var(--warn)}
+  .srow.hot0 .rhead,.srow.hot1 .rhead{box-shadow:inset 3px 0 0 var(--cdc)}
+  .lg-inline{font-size:12px;font-weight:400;color:var(--mut);white-space:nowrap}
+  .sdate{display:flex;flex-direction:column;line-height:1.2;min-width:0}
+  .sdate b{font-size:13px;font-weight:600;color:var(--tx);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .sdate span{font-size:10.5px;color:var(--mut);white-space:nowrap;margin-top:1px}
+  .sdate b.u0{color:var(--danger)}
+  .sdate b.u1{color:var(--warn)}
+  .sline1{display:flex;gap:6px;align-items:baseline;min-width:0}
+  .sline1 .rco{flex:0 1 auto}
+  .stitle{font-size:14px;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .smeta2{display:flex;flex-wrap:wrap;align-items:center;gap:3px 8px;margin-top:3px;font-size:12.5px;color:var(--mut)}
+  .smeta2 .smtxt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .smeta2 .tag{margin:0;padding:0 8px;font-size:11.5px;line-height:1.6}
+  .smeta2 .wtag{margin-left:0;font-size:11.5px}
+  .cdpill{font-size:12px;font-weight:600;white-space:nowrap;border:1px solid var(--bd);border-radius:999px;padding:0 8px;color:var(--mut);line-height:1.7}
+  .cdpill.u0{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 40%,transparent)}
+  .cdpill.u1{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 40%,transparent)}
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:8px 18px;border-radius:20px;opacity:0;transition:.25s;pointer-events:none;z-index:99;max-width:88vw;text-align:center}
   .toast.show{opacity:.94}
   /* 图标化：内联 SVG 图标与长文折叠 */
@@ -138,6 +160,9 @@
   .iline{display:flex;align-items:center;gap:4px}
   .rush .rtime{display:flex;align-items:center;gap:5px}
   .job .m{display:inline-flex;align-items:center;gap:2px;vertical-align:middle}
+.sal,.job .m.sal{color:var(--saltx);background:var(--salbg);font-weight:700;border-radius:6px;padding:1px 6px}
+  .sal .ic{width:12px;height:12px;color:var(--saltx);opacity:.75}
+  .salnote{font-style:normal;font-weight:400;font-size:11.5px;color:var(--mut);margin-left:5px}
   .dst{display:inline-flex;align-items:center;gap:3px}
   .dst .ic{margin-right:0}
   .clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;max-height:none}
@@ -163,13 +188,9 @@ JSON，你改那份 JSON，再让用户点「导入数据」导回；或——
 （ISO 格式，如 2026-11-20T23:30:00），用户下次打开即生效。
 两种方式不要混用同一批改动，避免互相覆盖。
 
-单卡分享格式（页面「分享」按钮生成口令/链接，导入时自动识别并合并，不覆盖全量数据）：
-{"qz-share":1, kind:"card"|"job", card:{company, unit, deadline, rolling,
-descr, links, tags, jobs:[{title, meta, desc}]}}
-口令＝「QZ1.」+ 上述 JSON 的 base64url 编码；分享链接＝在线版地址 + 「#s=」+ 同一编码。
-「口令导入」粘贴整段口令即可（正则提取 QZ1. 段解码）；打开带 #s= 的链接会弹出领取确认。
-导入合并规则：按 company 同名找已有卡——有则只并入标题未重复的新岗位
-（并补空缺的 deadline/links/descr）；无则新建一张待投递卡（id 取现有最大+1）。
+分享方式（2026-11-25 定版）：只保留分享文本——点卡片或岗位的分享按钮即复制人类可读文本，无弹窗。
+口令生成、口令导入、#s= 分享链接解析均已删除（链接已于 2026-11-22 放弃）。
+页头「导入」只用于导入全量数据 JSON 备份。
 
 顶层对象：
 { version:1, savedAt:"ISO时间",
@@ -180,7 +201,7 @@ cards 待投递卡（一家公司一张卡，可多岗位）：
 deadline:"YYYY-MM-DD" 或 null, rolling:true/false（招满即止）,
 descr:"卡片综述", tags:["标签"],
 jobs:[{ title:"岗位名（卡内唯一）", meta:"城市 · 学历 · 届别",
-desc:"岗位说明/JD 要点"}],
+desc:"岗位说明/JD 要点", salary:"薪资原文（官方未公布留空）"}],
 links:[{ before:"投递入口：", text:"链接文字", href:"https://…",
 after:""}]}
 
@@ -197,7 +218,7 @@ excluded 已排除：{ id, who:"公司或公司 · 岗位", why:"排除/关闭�
 schedule 日程事项：
 { id, company, title:"事项名",
 type:"assess 线上测评 | exam-online 线上笔试 | exam-offline 线下笔试
-| ai AI测评 | interview 真人面试 | talk 宣讲会
+| ai AI面试 | interview 真人面试 | talk 宣讲会
 | deadline 网申截止 | todo 待办",
 date:"YYYY-MM-DD" 或 null（null = 无日期待办）,
 dateEnd:"YYYY-MM-DD" 或 null（窗口型事项的结束日）,
@@ -219,12 +240,177 @@ location 取 job.meta 第一个「·」前字段），并从卡里移除该岗�
 .frm label{display:block;font-size:12.5px;color:var(--mut);margin:8px 0 3px}
 .frm input[type=text],.frm input[type=date],.frm input[type=url],.frm select,.frm textarea{width:100%;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);font-size:13.5px}
 .frm textarea{min-height:56px;resize:vertical}
-.frm.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
-@media (max-width:760px){.frm.grid{grid-template-columns:1fr}}
-.frm.jobrow{border:1px dashed var(--bd);border-radius:10px;padding:10px 12px;margin:8px 0}
-.frm.frow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.frm .grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+@media (max-width:760px){.frm .grid{grid-template-columns:1fr}}
+.frm .jobrow{border:1px dashed var(--bd);border-radius:10px;padding:10px 12px;margin:8px 0}
+.frm .frow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;border-top:1px solid var(--bd);padding-top:10px;flex:none}
 select.stsel{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:999px;padding:2px 8px;font-size:12.5px}
 .mini{padding:2px 10px;font-size:12px}
+  /* ─── 配色收拢（2026-11-26 重写，替代原「彩色化」9 色体系）────────
+     原来 4 张统计卡 4 色顶条 + 8 个板块页签 8 色 + 8 个日程类型 8 色
+     + 状态 4 色 + 头像编号 8 色 = 32 种色相同时在场，等于没有强调。
+     现在：统计卡顶条与数字一律中性，页签统一强调色，
+     颜色只保留在真正有语义的三处（截止/笔试/面试）。 */
+  /* 统计卡不再有彩色顶条：四个数字靠字号和位置就够了，加色条只是多四块噪音 */
+  .stat.zero .num{color:var(--mut)}
+  .stat.zero .lab .ic{color:var(--mut)}
+  .stat .num{color:var(--tx);font-variant-numeric:tabular-nums}
+  .stat .lab .ic{color:var(--mut)}
+  /* 板块页签 / 日程类型页签：只留强调色，不再按类型分色 */
+  #btabs button.on,#btabs button.on:hover{background:var(--acc);border-color:var(--acc);color:var(--onAcc)}
+  .btabs button.on[data-k]{background:var(--acc);border-color:var(--acc);color:var(--onAcc)}
+  /* 状态语义：投递中＝中性（在途且无消息），笔试＝琥珀，面试＝蓝，未通过＝灰 */
+  .dst.stc-投递中,.st-投递中{color:var(--tx)}
+  .dst.stc-笔试,.st-笔试{color:var(--warn)}
+  .dst.stc-面试,.st-面试{color:var(--accTx)}
+  .dst.stc-未通过,.st-未通过{color:var(--mut)}
+  .dst.stc-暂缓,.st-暂缓{color:var(--mut)}
+  /* 日程类型标签：默认中性灰，只有「网申截止」用红——类型本身已由文字+图标表达 */
+  .tag[class*="tyc-"]{background:var(--hov);color:var(--mut)}
+  .tag.tyc-deadline{background:color-mix(in srgb,var(--danger) 11%,transparent);color:var(--danger)}
+  .tag.tyc-interview{background:var(--accSoft);color:var(--accTx)}
+  .tag.tyc-exam-online,.tag.tyc-exam-offline,.tag.tyc-assess{background:color-mix(in srgb,var(--warn) 12%,transparent);color:var(--warn)}
+  /* 日历模式（2026-11-26 新增） */
+  .seg{display:inline-flex;border:1px solid var(--bd);border-radius:999px;overflow:hidden}
+  .seg button{border:none;border-radius:0;background:var(--card);padding:5px 14px}
+  .seg button.on{background:var(--acc);color:var(--onAcc);font-weight:600}
+  .calbar{display:flex;align-items:center;gap:8px;margin:6px 0 10px;flex-wrap:wrap}
+  .caltitle{font-size:17px;font-weight:700;margin:0 4px}
+  .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .cwd{text-align:center;color:var(--mut);font-size:12.5px;padding:2px 0}
+  .cday{background:var(--card);border:1px solid var(--bd);border-radius:10px;min-height:64px;padding:5px 7px;cursor:pointer}
+  .cday.empty{background:transparent;border:none;cursor:default}
+  .cday .cnum{font-weight:600;font-size:13.5px}
+  .cday.today{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
+  .cday.today .cnum{color:var(--accTx)}
+  .cday.sel{background:var(--accSoft)}
+  .cdots{display:flex;gap:3px;margin-top:3px;align-items:center;min-height:7px}
+  .cdot{width:7px;height:7px;border-radius:50%;display:inline-block}
+  .cmore{font-size:10.5px;color:var(--mut)}
+  .ccnt{font-size:11px;color:var(--mut);margin-top:2px}
+  .cday.week{min-height:118px;cursor:pointer}
+  .citem{font-size:11px;line-height:1.35;background:var(--hov);border-left:3px solid #999;border-radius:4px;padding:2px 5px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .btabs.chips button{padding:5px 12px;font-size:13.5px}
+  .ihead{display:flex;align-items:flex-start;gap:8px}
+  .wtag{display:inline-flex;align-items:center;gap:3px;background:color-mix(in srgb,var(--warn) 12%,transparent);color:var(--warn);border-radius:999px;padding:1px 8px;font-size:12px;font-weight:600;margin-left:6px;vertical-align:middle}
+  .wtag.crit{background:color-mix(in srgb,var(--danger) 12%,transparent);color:var(--danger)}
+  .wtag .ic{width:12px;height:12px}
+  .item .small .ic{margin-right:4px}
+  .dlbadge.dlurg{background:color-mix(in srgb,var(--u0) 13%,transparent);color:var(--u0);font-weight:600}
+  .cday{position:relative}
+  .tflag{position:absolute;top:5px;right:6px;background:var(--acc);color:#fff;border-radius:999px;font-size:10px;line-height:1.5;padding:0 5px}
+  #form-area:not(:empty),#sform-area:not(:empty){position:fixed;inset:0;z-index:60;background:rgba(15,15,15,.45);display:flex;align-items:flex-start;justify-content:center;padding:4vh 12px;overflow:auto}
+  #form-area .card.frm,#sform-area .card.frm{width:min(680px,100%);max-height:92vh;display:flex;flex-direction:column;overflow:hidden;margin:0 auto}
+  .frm .fhead{display:flex;align-items:center;gap:8px;flex:none}
+  .frm .fhead h3{margin:0;flex:1}
+  .frm .fbody{overflow:auto;flex:1;min-height:0}
+  .frm select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px}
+  .caps{display:flex;gap:6px;margin-top:3px}
+  .caps button{padding:7px 16px}
+  .caps button.on{background:var(--acc);color:var(--onAcc);border-color:var(--acc);font-weight:600}
+  .moreopts{margin-top:10px;border:1px dashed var(--bd);border-radius:10px;padding:8px 12px}
+  .moreopts summary{cursor:pointer;color:var(--mut);font-size:13px}
+  #btabs{gap:6px}
+  #btabs button{padding:5px 11px;font-size:13.5px}
+  .wtag.amb{color:var(--mut);background:var(--hov)}
+  /* ─── 表格可读性修复（2026-11-26）──────────────────────────────
+     症状：7 列表格在 1060px 内用 auto 布局，公司名被压成一字一列（竖排），
+     日期断成两行。做法：固定布局 + 每表 colgroup 定列宽 + 超长单行省略。 */
+  table{table-layout:fixed}
+  td,th{overflow-wrap:break-word}
+  .tnowrap{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tclamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.5}
+  /* 表格内状态：原生 select 收成「色点 + 文字」的只读徽章外观，
+     仍是原生下拉（必须显式点选才改值），不会再被误触改写。 */
+  .stpill{position:relative;display:inline-flex;align-items:center;max-width:100%}
+  .stpill .sdot{position:absolute;left:8px;width:5px;height:5px;border-radius:50%;background:currentColor;pointer-events:none;opacity:.95}
+  select.stsel{appearance:none;-webkit-appearance:none;border:1px solid var(--bd);border-radius:999px;
+    background:var(--card);color:inherit;font-size:12.5px;font-weight:600;line-height:1.7;
+    padding:2px 9px 2px 18px;cursor:pointer;max-width:100%}
+  select.stsel:hover{border-color:var(--acc);background:var(--hov)}
+  /* 视觉解嵌套：卡片内的灰底块改为发丝线，减少「灰框套灰框」的边界打架 */
+  .intro{background:transparent;border-left:2px solid var(--bd);border-radius:0;padding:1px 0 1px 10px}
+  .job{background:transparent;border-radius:8px}
+  .card{border-radius:12px}
+  /* ─── 行 + 展开（2026-11-26）────────────────────────────────────
+     75 张卡原地铺开时，每张 420px 高、含 4 层嵌套，一屏 1.5 条。
+     改成「一行一家公司，点开才看全文」：收起 52px，展开才铺内容。
+     视觉上用一条连续的列表容器（相邻行共用一条发丝线），
+     不再是 75 个独立浮块。 */
+  .rlist{border:1px solid var(--bd);border-radius:10px;background:var(--card);overflow:hidden}
+  .rrow+.rrow{border-top:1px solid var(--bd)}
+  .rrow.open{background:var(--card)}
+  .rhead{display:grid;grid-template-columns:26px minmax(0,1fr) auto 16px;gap:10px;align-items:center;
+    padding:8px 12px;min-height:52px;cursor:pointer;outline-offset:-2px}
+  .rhead:hover{background:var(--hov)}
+  .rhead:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+  .rno{font-size:12px;color:var(--mut);text-align:right;font-variant-numeric:tabular-nums}
+  .rco{font-weight:600;font-size:14.5px;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .runit{color:var(--mut);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1 1 0}
+  .rjobline{color:var(--mut);font-size:12.5px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rjobline b{color:var(--tx);font-weight:500}
+  .rmeta{display:flex;align-items:center;gap:6px;justify-content:flex-end;flex:none}
+  .rmeta .dltag{font-size:12px;color:var(--mut);white-space:nowrap}
+  .rmeta .dltag.urg{color:var(--danger);font-weight:600}
+  .rmeta .jt{font-size:12px;color:var(--mut);white-space:nowrap}
+  .rmeta .pz{font-size:11.5px;color:var(--mut);border:1px solid var(--bd);border-radius:999px;padding:0 7px;white-space:nowrap}
+  .rchev{display:flex;align-items:center;justify-content:center;color:var(--mut)}
+  .rchev .ic{width:14px;height:14px;transition:transform .16s}
+  .rrow.open .rchev .ic{transform:rotate(180deg)}
+  .rrow.open .rhead{background:var(--hov)}
+  .rbody{padding:12px 14px 16px 48px;border-top:1px solid var(--bd);background:var(--card)}
+  .dlsub{opacity:1}
+  @media (max-width:640px){
+    .rbody{padding-left:14px}
+    .rmeta .jt{display:none}
+    .runit{display:none}          /* 窄屏先牺牲单位全称，保住公司名与岗位 */
+    .dlsub{display:none}          /* 只留「剩 N 天」，不要「· 12-06 截止」 */
+    .rhead{grid-template-columns:22px minmax(0,1fr) auto 14px;gap:8px;padding:8px 10px}
+    .h2ops button{padding:2px 8px}
+  }
+  .rbody .rfoot{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--bd)}
+  /* 阶段清单（面试中 / 笔试中）：一行一条，两行封顶 */
+  .rrow .stageMeta{font-size:12.5px;color:var(--mut);margin-top:2px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+  /* 已投记录：同一公司合并成一条，岗位收在展开区（表格式列对齐留给展开内的 .rjob） */
+  .rstats{font-size:12px;color:var(--mut);white-space:nowrap;font-variant-numeric:tabular-nums}
+  /* 薪资列（2026-11-26）：458 条里 206 条填了薪资，收起态一条都看不到，
+     要逐条展开才知道值不值得投。单独给一列右对齐的数字，竖着扫就能比。
+     颜色单独给主色（2026-11-26 二次）：整行公司/岗位/状态/日期都是灰阶，
+     只有薪资带颜色，一眼能从「这行都有什么」里把金额挑出来；
+     「面议」不是一个数，跟空值一样走灰，不让它抢注意力。
+     原文多是「参考：8千-1.5万（51job 同名校招岗）」这种长串，
+     列里只放去掉来源注释的数字核心，全文留 title 悬停看。
+     多岗口径不同就并列（去重后最多两条，再多写「等 N 档」），没填的留空不写占位。 */
+  .crow .rhead,.rgrow .rhead{grid-template-columns:26px minmax(0,1fr) 148px auto 16px}
+  .rsal{font-size:12.5px;font-weight:600;color:var(--saltx);text-align:right;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+  .rsal.mut{font-weight:400;color:var(--mut)}
+  .rsal.none{font-weight:400;color:var(--mut);opacity:.5}
+  .filtering .rgrow .rmeta .jt,.filtering .rgrow .rmeta .rstats{display:none}
+  .rgrow .rmeta .dltag{margin-left:2px;padding-left:8px;border-left:1px solid var(--bd)}
+  .rjob{display:grid;grid-template-columns:88px minmax(0,1fr) auto 30px;gap:10px;align-items:start;
+        padding:9px 0;border-top:1px solid var(--bd)}
+  .rjob:first-child{border-top:0;padding-top:2px}
+  .rjob .jdate{font-size:12.5px;color:var(--mut);font-variant-numeric:tabular-nums;white-space:nowrap;padding-top:2px}
+  .rjob .jmain{min-width:0}
+  .rjob .jtitle{font-size:14px;color:var(--tx);line-height:1.45;overflow-wrap:anywhere}
+  .rjob .jtitle a{color:var(--accTx)}
+  .rjob .jsub{font-size:12.5px;color:var(--mut);margin-top:2px;line-height:1.5;
+        display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .rjob .stpill{justify-self:end;align-self:start}
+  .rjob .btn-drop{justify-self:end;align-self:start}
+  @media (max-width:640px){
+    .rjob{grid-template-columns:74px minmax(0,1fr) auto 26px;gap:8px}
+    .srow .rhead{grid-template-columns:46px minmax(0,1fr) auto 14px;column-gap:8px}
+    .crow .rhead,.rgrow .rhead{grid-template-columns:22px minmax(0,1fr) auto 14px}
+    .rsal{display:none}                        /* 窄屏先舍薪资列，展开里还有 */
+    .rgrow .rmeta .dltag{display:none}          /* 窄屏先舍日期，状态是判断依据 */
+    .rgrow .rmeta .rstats{max-width:92px;overflow:hidden;text-overflow:ellipsis}
+    .rgrow .rmeta .jt{display:inline}           /* 岗位数比日期重要，窄屏留着 */
+  }
+  /* 展开/收起全部 */
+  .h2ops{display:flex;gap:6px;align-items:center;margin-left:auto;font-weight:400;flex-wrap:wrap;max-width:100%}
+  .h2ops button{padding:2px 10px;font-size:12.5px;color:var(--mut)}
 </style>
 </head>
 <body data-view="board">
@@ -236,12 +422,13 @@ select.stsel{border:1px solid var(--bd);background:var(--card);color:var(--tx);b
 <button id="tab-sched" onclick="show('sched')"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>日程表</button>
 </span>
 <span style="flex:1"></span>
-<button class="primary" onclick="openCardForm()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>新增卡</button>
+<button id="undobtn" onclick="undoLast()" disabled style="opacity:.45"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>撤回</button>
+<button id="redobtn" onclick="redoLast()" disabled style="opacity:.45"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg>恢复</button>
 <button onclick="exportData()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>导出</button>
 <button onclick="document.getElementById('importfile').click()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>导入</button>
-<button onclick="openCodeImport()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2M15 7h2a5 5 0 1 1 0 10h-2M8 12h8"/></svg>口令导入</button>
 <input type="file" id="importfile" accept=".json,application/json" style="display:none" onchange="importData(this)">
 <button onclick="exportIcs()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>.ics</button>
+<button class="themebtn" onclick="cycleTheme()"></button>
 </div>
 <div class="row" style="margin-top:6px"><span class="small mut">数据保存在本浏览器里；换浏览器、清缓存会丢，请定期点「导出」备份。把导出的 JSON 或本文件交给 AI 助手即可帮你维护（文件顶部有给 AI 的说明）。</span></div>
 </header>
@@ -253,12 +440,12 @@ select.stsel{border:1px solid var(--bd);background:var(--card);color:var(--tx);b
 <main>
 <div id="view-board">
 <div class="stats">
-<div class="stat"><div class="num" id="st-open">–</div><div class="lab" id="st-openlab">待投递（家）</div></div>
-<div class="stat"><div class="num" id="st-rec">–</div><div class="lab"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>已投（条）</div></div>
-<div class="stat"><div class="num" id="st-exam">–</div><div class="lab"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>笔试 · 面试</div></div>
-<div class="stat"><div class="num" id="st-lead">–</div><div class="lab"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 9 12 4 2 9l10 5 10-5z"/><path d="M6 11.5V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-4.5"/><path d="M22 9v5"/></svg>待投线索</div></div>
+<div class="stat c1"><div class="num" id="st-open">–</div><div class="lab" id="st-openlab">待投递（家）</div></div>
+<div class="stat c2"><div class="num" id="st-rec">–</div><div class="lab"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>已投（条）</div></div>
+<div class="stat c3" title="按「已投记录」的状态统计（累计口径，含已结束）；下方「笔试中 / 面试中」页签是待办队列口径，两者含义不同"><div class="num" id="st-exam">–</div><div class="lab"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>笔试 · 面试</div></div>
+<div class="stat c5"><div class="num" id="st-lead">–</div><div class="lab"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 9 12 4 2 9l10 5 10-5z"/><path d="M6 11.5V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-4.5"/><path d="M22 9v5"/></svg>待投线索</div></div>
 </div>
-<div class="distline"><span id="distline"></span><span style="flex:1"></span><button class="themebtn" onclick="cycleTheme()"></button></div>
+<div class="distline"><span id="distline"></span><span style="flex:1"></span><button class="primary" onclick="openCardForm()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>新增投递</button></div>
 <input class="search" id="bq" type="search" placeholder="搜索公司、岗位、城市、状态" oninput="Q=this.value;applySearch()">
 <nav class="btabs" id="btabs"></nav>
 <div id="form-area"></div>
@@ -312,6 +499,7 @@ info:'<circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/>',
 check:'<path d="M20 6 9 17l-5-5"/>',
 x:'<path d="M18 6 6 18M6 6l12 12"/>',
 xcirc:'<circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/>',
+alert:'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
 pause:'<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
 play:'<path d="m6 4 14 8-14 8V4z"/>',
 pencil:'<path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
@@ -335,7 +523,8 @@ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.3
 moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
 half:'<circle cx="12" cy="12" r="9"/><path d="M12 3v18a9 9 0 0 0 0-18z" fill="currentColor" stroke="none"/>',
 dot:'<circle cx="12" cy="12" r="4"/>',
-share:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/>'};
+share:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/>',
+cash:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>'};
 function ic(n,cls){return `<svg class="ic ${cls||''}" viewBox="0 0 24 24" aria-hidden="true">${IC[n]||IC.dot}</svg>`}
 function themeIc(){const m=document.documentElement.dataset.theme||'auto';return m==='dark'?'moon':m==='light'?'sun':'half'}
 function clampHtml(txt,cls){const t=String(txt||'');if(t.length<=90)return `<div class="${cls}">${esc(t)}</div>`;return `<div class="clampwrap"><div class="${cls} clamp">${esc(t)}</div><button class="clampbtn" onclick="toggleClamp(this)">${ic('chev')}<span>展开</span></button></div>`}
@@ -357,15 +546,23 @@ const LSKEY='qz-single-db-v1';
 const STATUSES=['投递中','笔试','面试','未通过'];
 function seedData(){return JSON.parse(document.getElementById('qz-seed').textContent)}
 function norm(d){d=d||{};d.cards=d.cards||[];d.records=d.records||[];d.pauses=d.pauses||[];d.verify=d.verify||[];d.excluded=d.excluded||[];d.schedule=d.schedule||[];d.leads=d.leads||[];d.interview=d.interview||[];d.test=d.test||[];d.rush=d.rush||[];d.leadGroups=d.leadGroups||[];d.leadLinks=d.leadLinks||{};d.leadExtraTags=d.leadExtraTags||{};d.pipelineDef=d.pipelineDef||[];return d}
+function savedAtCmp(a,b){const ta=Date.parse(a||''),tb=Date.parse(b||'');if(!isNaN(ta)&&!isNaN(tb))return ta<tb?-1:ta>tb?1:0;const x=String(a||''),y=String(b||'');return x<y?-1:x>y?1:0}
 function loadDB(){
   const seed=seedData();
   let local=null;
   try{local=JSON.parse(localStorage.getItem(LSKEY)||'null')}catch(e){}
-  if(local&&local.cards&&(!seed.savedAt||!local.savedAt||local.savedAt>=seed.savedAt))return norm(local);
+  if(local&&local.cards&&(!seed.savedAt||!local.savedAt||savedAtCmp(local.savedAt,seed.savedAt)>=0))return norm(local);
   return norm(seed);
 }
 let DB=loadDB();
-function save(){DB.savedAt=new Date().toISOString();try{localStorage.setItem(LSKEY,JSON.stringify(DB))}catch(e){toast('本地保存失败，请及时导出数据备份')}noteChange()}
+let __undoStack=[],__redoStack=[],__restoring=false,__curJSON=JSON.stringify(DB);
+function __strip(s){try{const o=JSON.parse(s);o.savedAt='';return JSON.stringify(o)}catch(e){return s}}
+function __paintUndo(){const u=document.getElementById('undobtn'),r=document.getElementById('redobtn');if(u){u.disabled=!__undoStack.length;u.style.opacity=__undoStack.length?'1':'.45'}if(r){r.disabled=!__redoStack.length;r.style.opacity=__redoStack.length?'1':'.45'}}
+function __restore(snap){__restoring=true;DB=norm(JSON.parse(snap));try{closeForm()}catch(e){}try{closeSForm()}catch(e){}save();__restoring=false;renderAll();__paintUndo()}
+function undoLast(){if(!__undoStack.length)return;const cur=__curJSON;const snap=__undoStack.pop();if(cur)__redoStack.push(cur);__restore(snap);toast('已撤回上一步操作')}
+function redoLast(){if(!__redoStack.length)return;const cur=__curJSON;const snap=__redoStack.pop();if(cur)__undoStack.push(cur);__restore(snap);toast('已恢复刚才撤回的操作')}
+document.addEventListener('keydown',function(e){const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;if((e.metaKey||e.ctrlKey)&&!e.shiftKey&&(e.key==='z'||e.key==='Z')){e.preventDefault();undoLast()}else if((e.metaKey||e.ctrlKey)&&(e.key==='y'||(e.shiftKey&&(e.key==='Z'||e.key==='z')))){e.preventDefault();redoLast()}});
+function save(){DB.savedAt=new Date().toISOString();const s=JSON.stringify(DB);if(!__restoring&&__curJSON&&__strip(s)!==__strip(__curJSON)){__undoStack.push(__curJSON);if(__undoStack.length>30)__undoStack.shift();__redoStack.length=0}try{localStorage.setItem(LSKEY,s);__curJSON=s}catch(e){toast('本地保存失败，请及时导出数据备份')}__paintUndo();noteChange()}
 /* 备份提醒：改动过且距上次导出超过 7 天（或从未导出）时，顶部横幅提醒导出 */
 const METAKEY='qz-single-meta-v1';
 function loadMeta(){try{return JSON.parse(localStorage.getItem(METAKEY)||'{}')}catch(e){return{}}}
@@ -390,6 +587,70 @@ function todayStr(){const t=new Date();return t.getFullYear()+'-'+String(t.getMo
 function isPaused(cardId,title){return DB.pauses.some(p=>p.cardId===cardId&&p.jobTitle===title)}
 function openCounts(){let oc=0,oj=0;for(const c of DB.cards){let n=0;for(const j of c.jobs)if(!isPaused(c.id,j.title))n++;if(n){oc++;oj+=n}}return{openCards:oc,openJobs:oj}}
 function sortedRecords(){const rs=[...DB.records];rs.sort((a,b)=>((b.appliedOn||'')<(a.appliedOn||'')?-1:(b.appliedOn||'')>(a.appliedOn||'')?1:b.id-a.id));const d=rs.filter(r=>r.appliedOn),u=rs.filter(r=>!r.appliedOn);return d.concat(u)}
+/* 薪资原文 → 一列扫得动的数字核心（2026-11-26）
+   原文普遍带来源注释：「参考：8千-1.5万（51job 同名校招岗，上海）」，
+   直接塞进收起行会把整行挤爆。规则：去「参考：」→ 砍掉第一个括号起的出处
+   （全角半角混用、常有未闭合，从第一个左括号一律砍到底）→ 多档位只留第一档
+   → 仍超过 14 字就抽数字区间。只用于收起态那一列，全文放 title，展开里仍是原文。 */
+function salTxt(s){
+  let t=String(s||'').replace(/\s+/g,' ').replace(/(\d),(?=\d{3})/g,'').trim();
+  if(!t)return'';
+  t=t.replace(/^参考[：:]\s*/,'');
+  const br=t.search(/[（(]/);if(br>0)t=t.slice(0,br);
+  t=t.split(/[；;]/)[0].replace(/[，,。、]\s*$/,'').trim();
+  if(t.length<=14)return t;
+  /* 数字前面也可能带单位（1.5w-2.5w），不然会从后半段「12-15」开始匹配 */
+  const m=t.match(/\d[\d.]*\s*(?:k|K|千|万|w|W)?\s*[-~—–至到]\s*\d[\d.]*\s*(?:k|K|千|万|w|W|元)?(?:\s*\/\s*(?:月|年))?(?:\s*[·*×xX]\s*\d{1,2}\s*薪)?/);
+  if(m)return m[0].replace(/\s+/g,'');
+  /* 没有区间的长句（「转正后首年全部收入：本科17.6万起、硕士18.6万起」），
+     挑第一个带数字+单位的小句，再砍掉前面的标签词，比硬截断好读 */
+  for(const seg of t.split(/[，,、；;]/)){
+    const s=seg.trim();
+    if(!/\d/.test(s)||!/(万|千|[kK]|元|薪)/.test(s))continue;
+    const bare=s.includes('：')?s.slice(s.lastIndexOf('：')+1).trim():s;
+    if(bare.length<=14)return bare;
+  }
+  const d=t.search(/\d/);if(d>0&&d<=10)t=t.slice(d);
+  return t.length>14?t.slice(0,14)+'…':t;
+}
+/* 一组岗位的薪资 → 收起行那一格里的一句话（2026-11-26）
+   按精简后的口径去重（原文只差来源注释的算同一档），最多并列两条，
+   再多只写「首条 等 N 档」，全文挂 title。一个都没填就留空，不写占位词。 */
+function salLine(list){
+  const uniq=[],raw=[];
+  for(const x of list){
+    const t=salTxt(x);
+    if(!t)continue;
+    if(!raw.includes(String(x).trim()))raw.push(String(x).trim());
+    if(!uniq.includes(t))uniq.push(t);
+  }
+  if(!uniq.length)return{txt:'',tip:'这些岗位都还没填薪资'};
+  /* 一格的宽度约 20 个西文字符，两档并列塞不下就退回「首条 等 N 档」，
+     免得出现「9-13k·13薪 / 12-20k…」这种被切掉一半的并列 */
+  const est=str=>[...str].reduce((n,ch)=>n+(ch.charCodeAt(0)>255?12.2:6.9),0);
+  let head=uniq[0];
+  if(est(head)>130){
+    const r=head.match(/\d[\d.]*\s*(?:k|K|千|万|w|W)?\s*[-~—–至到]\s*\d[\d.]*\s*(?:k|K|千|万|w|W|元)?(?:\s*\/\s*(?:月|年))?(?:\s*[·*×xX]\s*\d{1,2}\s*薪)?/);
+    if(r)head=r[0].replace(/\s+/g,'');
+  }
+  const two=uniq.slice(0,2).join(' / ');
+  const txt=uniq.length===2&&est(two)<=146?two:(uniq.length===1?head:head+' 等'+uniq.length+'档');
+  /* 「面议」这类没有数字的口径不上主色，跟缺失一样按次要信息处理 */
+  return{txt,neutral:!/\d/.test(txt),tip:raw.length>1?'共 '+uniq.length+' 档薪资：\n'+raw.slice(0,6).join('\n'):'薪资：'+raw[0]};
+}
+/* 展开区的薪资标签（2026-11-26 二次）：数值走主色，括号里的出处降成灰字。
+   原来整串「参考：12-24k·14薪（猎聘·同类）」都同色，比岗位名还长、还抢眼；
+   拆开后一眼是金额，出处留给想核对的人，全文仍在 title 里。 */
+function salChip(s){
+  const raw=String(s||'').trim();if(!raw)return'';
+  const i=raw.search(/[（(]/);
+  let note=i>0?raw.slice(i).replace(/^[（(]/,'').replace(/[）)]+$/,'').trim():'';
+  if(note.length>24)note=note.slice(0,24)+'…';
+  const ref=/^参考[：:]/.test(raw)?'参考 · ':'';
+  const v=salTxt(raw)||raw;
+  const extra=(ref+note).trim();
+  return `<span class="sal" title="${esc(raw)}">${ic('cash')}${esc(v)}${extra?`<i class="salnote">${esc(extra)}</i>`:''}</span>`;
+}
 
 function markJob(cardId,idx,action){
   const c=DB.cards.find(x=>x.id===cardId);if(!c)return;
@@ -404,7 +665,7 @@ function markJob(cardId,idx,action){
   if(action==='applied'){
     const loc=(j.meta&&j.meta.includes('·'))?j.meta.split('·')[0].trim():'';
     const url=((c.links||[]).find(l=>l.href)||{}).href||'';
-    DB.records.push({id:nextId(DB.records),company:c.company,job:j.title,location:loc,appliedOn:today,status:'投递中',jd:j.desc||'',url,note:'看板标记已投递（'+today+'）'});
+    DB.records.push({id:nextId(DB.records),company:c.company,job:j.title,location:loc,appliedOn:today,status:'投递中',jd:j.desc||'',url,salary:j.salary||'',note:'看板标记已投递（'+today+'）'});
   }
   if(c.jobs.length===0){
     DB.cards=DB.cards.filter(x=>x.id!==cardId);
@@ -434,13 +695,34 @@ function renderAll(){renderBoard();renderSched();paintThemeBtn()}
 
 /* ---------------- 看板 ---------------- */
 let BTAB='apply',Q='';
-const BTABS=[['apply','待投递'],['leads','待投线索'],['interview','面试中'],['test','笔试中'],['rush','冲刺项'],['verify','备选'],['records','全部已投'],['excluded','已排除 · 待核实']];
+const BTABS=[['apply','待投递'],['records','全部已投'],['leads','待投线索'],['interview','面试中'],['test','笔试中'],['rush','冲刺项'],['verify','备选'],['excluded','已排除 · 待核实']];
 const TABIC={apply:'brief',leads:'cap',interview:'users',test:'pen',rush:'target',verify:'eye',records:'list',excluded:'ban'};
 function setBTab(t){BTAB=t;document.querySelectorAll('#btabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));BTABS.forEach(([k])=>{const el=$('#panel-'+k);if(el)el.style.display=k===t?'':'none'});applySearch()}
 function applySearch(){
   const q=Q.trim().toLowerCase(),panel=$('#panel-'+BTAB);if(!panel)return;
   let vis=0;
-  panel.querySelectorAll('.flt').forEach(el=>{const on=!q||(el.dataset.q||'').includes(q);el.style.display=on?'':'none';if(on)vis++});
+  const underHidden=el=>{let p=el.parentElement;while(p&&p!==panel){if(p.hidden||getComputedStyle(p).display==='none')return true;p=p.parentElement}return false};
+  panel.querySelectorAll('.flt').forEach(el=>{
+    const on=!q||(el.dataset.q||'').includes(q);
+    el.style.display=on?'':'none';
+    if(on&&!underHidden(el))vis++;
+  });
+  /* 记录页按公司合并：有搜索词时自动展开命中的公司，清空后恢复用户自己的开合状态 */
+  panel.querySelectorAll('.rgrow').forEach(g=>{
+    const body=g.querySelector('.rbody');if(!body)return;
+    const hit=[...g.querySelectorAll('.rjob')].filter(j=>j.style.display!=='none');
+    const open=q?hit.length>0:OPENROWS.has('co:'+g.dataset.co);
+    g.classList.toggle('open',open);body.hidden=!open;
+    /* 过滤时头部改报「匹配 N 条」，否则右边还挂着全量的「8 岗 / 投递中 8」，和眼前一条对不上 */
+    const line=g.querySelector('.rjobline');
+    if(line){if(!line.dataset.orig)line.dataset.orig=line.innerHTML;
+      if(q&&hit.length)line.innerHTML=`<b>匹配 ${hit.length} 条</b>`;else line.innerHTML=line.dataset.orig}
+  });
+  panel.classList.toggle('filtering',!!q);
+  panel.querySelectorAll('.rlist').forEach(l=>{
+    const any=[...l.children].some(c=>c.style.display!=='none'&&!c.hidden);
+    l.style.display=(q&&!any)?'none':'';
+  });
   let nr=panel.querySelector('.nores');if(!nr){nr=document.createElement('p');nr.className='nores mut';nr.textContent='没有匹配的条目';panel.appendChild(nr)}
   nr.style.display=(q&&vis===0)?'':'none';
 }
@@ -452,77 +734,206 @@ function renderHead(){
   $('#st-rec').textContent=DB.records.length;
   $('#st-exam').textContent=(sc['笔试']||0)+(sc['面试']||0);
   $('#st-lead').textContent=DB.leads.length;
+  /* 有值的卡给一条细蓝线，0 值保持灰——不用四种颜色区分，也能一眼看出哪块是空的 */
+  [['#st-open',cnt.openCards],['#st-rec',DB.records.length],['#st-exam',(sc['笔试']||0)+(sc['面试']||0)],['#st-lead',DB.leads.length]]
+    .forEach(([sel,v])=>{const st=$(sel);if(!st)return;const card=st.closest('.stat');if(!card)return;
+      card.classList.toggle('has',v>0);card.classList.toggle('zero',!(v>0))});
   const SIC={'投递中':'send','笔试':'pen','面试':'users','未通过':'xcirc'};
-  const parts=STATUSES.filter(k=>sc[k]).map(k=>`${ic(SIC[k]||'dot')}${k} <b>${sc[k]}</b>`);
-  Object.keys(sc).filter(k=>!STATUSES.includes(k)).forEach(k=>parts.push(`${ic('dot')}${esc(k)} <b>${sc[k]}</b>`));
-  parts.push(`${ic('pause')}暂缓 <b>${DB.pauses.length}</b>`);
-  $('#distline').innerHTML=parts.map(p=>`<span class="dst">${p}</span>`).join(' · ');
+  const parts=STATUSES.filter(k=>sc[k]).map(k=>`<span class="dst stc-${k}">${ic(SIC[k]||'dot')}${k} <b>${sc[k]}</b></span>`);
+  Object.keys(sc).filter(k=>!STATUSES.includes(k)).forEach(k=>parts.push(`<span class="dst">${ic('dot')}${esc(k)} <b>${sc[k]}</b></span>`));
+  parts.push(`<span class="dst stc-暂缓">${ic('pause')}暂缓 <b>${DB.pauses.length}</b></span>`);
+  $('#distline').innerHTML=parts.join(' · ');
 }
+/* ─── 行 + 展开（2026-11-26）────────────────────────────────────
+   收起：一行一家公司（约 52px），公司名 + 首个岗位 + 截止/岗位数 + 箭头。
+   展开：原卡片的全部内容（链接、简介、说明、岗位操作、标签、编辑删除）。
+   开合状态存 OPENROWS，重渲染（如标记已投）后保留，不会突然全部收起。 */
+const OPENROWS=new Set();
+/* 键统一转成字符串：卡行用数字 id、冲刺行用 'r3'、公司组合行用 'co:公司名'，
+   混用数字与字符串会让「展开后重渲染」判断失配，状态就丢了。 */
+function rowKeyOf(row){return String(row.dataset.id||'')}
+function setRowOpen(row,open){
+  const key=rowKeyOf(row),body=row.querySelector('.rbody'),head=row.querySelector('.rhead');
+  if(!body||!key)return;row.classList.toggle('open',open);body.hidden=!open;
+  if(head)head.setAttribute('aria-expanded',open?'true':'false');
+  if(open)OPENROWS.add(key);else OPENROWS.delete(key);
+}
+function toggleRow(head){const row=head.closest('.rrow');if(row)setRowOpen(row,!row.classList.contains('open'))}
+function rowKey(e,head){if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleRow(head)}}
+function isRowOpen(row){const k=rowKeyOf(row);return k?OPENROWS.has(k):false}
+function expandAll(open,scope){document.querySelectorAll((scope||'#panel-apply')+' .rrow').forEach(r=>setRowOpen(r,open))}
 function cardHtml(c,no){
   const jobsHtml=c.jobs.map((j,idx)=>{
     let ops='';
     if(isPaused(c.id,j.title))ops=`<div class="ops"><span class="badge pause">${ic('pause')}暂缓中</span>
       <button onclick="unpauseIdx(${c.id},${idx})">${ic('play')}取消暂缓</button>
- <button class="ibtn" title="分享这个岗位" onclick="openShare(${c.id},${idx})">${ic('share')}</button></div>`;
+ <button title="分享这个岗位" onclick="openShare(${c.id},${idx})">${ic('share')}分享</button></div>`;
     else ops=`<div class="ops">
       <button class="primary" onclick="markJob(${c.id},${idx},'applied')">${ic('check')}已投</button>
       <button onclick="markJob(${c.id},${idx},'dropped')">${ic('x')}放弃</button>
       <button onclick="markJob(${c.id},${idx},'paused')">${ic('pause')}暂缓</button>
- <button class="ibtn" title="分享这个岗位" onclick="openShare(${c.id},${idx})">${ic('share')}</button></div>`;
-    return `<div class="job"><span class="t">${esc(j.title)}</span> <span class="m">${j.meta?ic('pin')+esc(j.meta):''}</span>
+ <button title="分享这个岗位" onclick="openShare(${c.id},${idx})">${ic('share')}分享</button></div>`;
+    return `<div class="job"><span class="t">${esc(j.title)}</span> <span class="m">${j.meta?ic('pin')+esc(j.meta):''}</span>${j.salary?` ${salChip(j.salary)}`:''}
+      ${j.link?`<div class="small iline">${ic('link')}<a href="${esc(j.link.href)}" target="_blank" rel="noopener">${esc(j.link.text||j.link.href)}</a></div>`:''}
       ${j.desc?clampHtml(j.desc,'d'):''}${ops}</div>`}).join('');
-  const dl=c.deadline?esc(c.deadline):(c.rolling?'招满即止':'无截止');
-  const q=(c.company+' '+(c.unit||'')+' '+(c.descr||'')+' '+c.jobs.map(j=>j.title+' '+(j.meta||'')).join(' ')+' '+(c.tags||[]).join(' ')).toLowerCase();
-  return `<div class="card flt" data-q="${esc(q)}"><div class="chead"><span class="no">${no}</span><span class="co">${esc(c.company)}</span> <span class="unit">${esc(c.unit||'')}</span>
-    <span style="flex:1"></span><button class="mini ibtn" title="分享" onclick="openShare(${c.id})">${ic('share')}</button><button class="mini ibtn" title="编辑" onclick="openCardForm(${c.id})">${ic('pencil')}</button><button class="mini ibtn btn-drop" title="删除" onclick="deleteCard(${c.id})">${ic('trash')}</button></div>
-    <div><span class="dlbadge">${ic('clock')}${dl}</span></div>
-    ${c.descr?clampHtml(c.descr,'descr'):''}
-    ${jobsHtml}
+  const dlU=(c.deadline&&daysUntil(c.deadline)>=0&&daysUntil(c.deadline)<=3)?' urg':'';
+  const q=(c.company+' '+(c.unit||'')+' '+(c.descr||'')+' '+(c.intro||'')+' '+c.jobs.map(j=>j.title+' '+(j.meta||'')+' '+(j.salary||'')).join(' ')+' '+(c.tags||[]).join(' ')).toLowerCase();
+  /* 收起态右侧只放会改变判断的信息：截止 / 岗位数 / 暂缓数。没有就留空。 */
+  const pausedN=c.jobs.filter(j=>isPaused(c.id,j.title)).length;
+  const liveFirst=c.jobs.find(j=>!isPaused(c.id,j.title))||c.jobs[0]||{};
+  const restN=c.jobs.length-1;
+  const meta=[
+    (c.deadline||c.rolling)?`<span class="dltag${dlU}">${ic('clock')}<span class="dlmain">${esc(dlMain(c))}</span><span class="dlsub">${esc(dlSub(c))}</span></span>`:'',
+    c.jobs.length>1?`<span class="jt">${c.jobs.length} 岗</span>`:'',
+    pausedN?`<span class="pz">暂缓 ${pausedN}</span>`:''
+  ].filter(Boolean).join('');
+  const open=OPENROWS.has(String(c.id));
+  /* 首行那个岗位的薪资排在最前，其余岗位的薪资并列跟上（去重，最多两条） */
+  const sl=salLine([liveFirst.salary,...c.jobs.filter(j=>j!==liveFirst).map(j=>j.salary)]);
+  return `<div class="rrow crow flt${open?' open':''}" data-id="${c.id}" data-q="${esc(q)}">
+    <div class="rhead" role="button" tabindex="0" aria-expanded="${open?'true':'false'}" onclick="toggleRow(this)" onkeydown="rowKey(event,this)">
+      <span class="rno">${String(no).padStart(2,'0')}</span>
+      <div style="min-width:0"><div style="display:flex;gap:7px;align-items:baseline;min-width:0"><span class="rco">${esc(c.company)}</span><span class="runit">${esc(c.unit||'')}</span></div>
+        <div class="rjobline"><b>${esc(liveFirst.title||'')}</b>${restN>0?` · 另 ${restN} 岗`:''}</div></div>
+      <span class="rsal${sl.txt?(sl.neutral?' mut':''):' none'}" title="${esc(sl.tip)}">${esc(sl.txt)}</span>
+      <div class="rmeta">${meta}</div>
+      <span class="rchev">${ic('chev')}</span>
+    </div>
+    <div class="rbody"${open?'':' hidden'}>
     ${(c.links&&c.links.length)?`<div class="links">${c.links.map(linkLine).join('')}</div>`:''}
-    ${(c.tags&&c.tags.length)?`<div class="tagrow">${c.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:''}</div>`;
+    ${c.intro?`<div class="intro">${ic('brief')}<div>${esc(c.intro)}</div></div>`:''}
+    ${c.descr?`<div class="notes"><div class="nlab">${ic('clip')}招聘说明</div>${clampHtml(c.descr,'descr')}</div>`:''}
+    ${jobsHtml}
+    ${(c.tags&&c.tags.length)?`<div class="tagrow">${c.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:''}
+    <div class="rfoot"><button class="mini" onclick="openShare(${c.id})">${ic('share')}分享卡片</button><button class="mini" onclick="openCardForm(${c.id})">${ic('pencil')}编辑</button><button class="mini btn-drop" onclick="deleteCard(${c.id})">${ic('trash')}删除</button></div>
+    </div></div>`;
 }
 function renderBoard(){
   renderHead();
-  $('#btabs').innerHTML=BTABS.map(([k,label])=>`<button data-t="${k}" class="${k===BTAB?'on':''}" onclick="setBTab('${k}')">${ic(TABIC[k]||'dot')}${label}</button>`).join('');
+  /* 计数口径统一（2026-11-26 修）：chip 的数字必须等于点进去后该区块标题的数量。
+     原先 interview/test 用 records.status 过滤（20/7），区块用 DB.test/DB.interview（22/9），
+     两个数字对不上，用户会认为数据错了。此处一律取区块自身长度。 */
+  const tcnt={apply:openCounts().openCards,leads:DB.leads.length,interview:(DB.interview||[]).length,test:(DB.test||[]).length,rush:DB.rush.length,verify:DB.verify.length,records:DB.records.length,excluded:DB.excluded.length};
+  $('#btabs').innerHTML=BTABS.map(([k,label])=>`<button data-t="${k}" class="${k===BTAB?'on':''}" onclick="setBTab('${k}')">${ic(TABIC[k]||'dot')}${label} ${tcnt[k]??''}</button>`).join('');
   const cards=[...DB.cards].sort((a,b)=>{if(a.deadline&&b.deadline)return a.deadline<b.deadline?-1:1;if(a.deadline)return -1;if(b.deadline)return 1;return a.id-b.id});
-  let openHtml='',pauseHtml='',no=0;
+  /* 两个列表各自独立编号：暂缓卡不占待投递的号，否则会出现 01、02、16、17 的跳号 */
+  let openHtml='',pauseHtml='',nOpen=0,nPause=0;
   for(const c of cards){
     const openN=c.jobs.filter(j=>!isPaused(c.id,j.title)).length;
     if(openN===0&&c.jobs.length===0)continue;
-    no++;
-    if(openN>0)openHtml+=cardHtml(c,no);else if(c.jobs.length)pauseHtml+=cardHtml(c,no);
+    if(openN>0)openHtml+=cardHtml(c,++nOpen);else if(c.jobs.length)pauseHtml+=cardHtml(c,++nPause);
   }
   const cnt=openCounts();
+  const h2ops=`<span class="h2ops"><button onclick="expandAll(true)">${ic('chev')}全部展开</button><button onclick="expandAll(false)">全部收起</button></span>`;
   $('#panel-apply').innerHTML=`
-    <h2>${ic('brief','lg')}待投递 <span class="cnt">${cnt.openCards} 家 · ${cnt.openJobs} 岗 · 暂缓 ${DB.pauses.length}</span></h2>
-    ${openHtml||'<p class="mut">无</p>'}
-    ${pauseHtml?`<h2>${ic('pause','lg')}暂缓投递 <span class="cnt">${DB.pauses.length} 个</span></h2>${pauseHtml}`:''}`;
+    <h2>${ic('brief','lg')}待投递 <span class="cnt">${cnt.openCards} 家 · ${cnt.openJobs} 岗 · 暂缓 ${DB.pauses.length}</span>${h2ops}</h2>
+    ${openHtml?`<div class="rlist">${openHtml}</div>`:'<p class="mut">无</p>'}
+    ${pauseHtml?`<h2>${ic('pause','lg')}暂缓投递 <span class="cnt">${DB.pauses.length} 个</span></h2><div class="rlist">${pauseHtml}</div>`:''}`;
   const recs=sortedRecords();
-  $('#panel-records').innerHTML=`<h2>${ic('list','lg')}全部已投 <span class="cnt">${recs.length} 条</span></h2>
+  /* 同一公司的已投记录合并成一条（2026-11-26）：458 条 → 261 家，
+     公司只出现一次，岗位收在展开区里，各自的日期/状态/备注/删除都还在。
+     OPENROWS 记 'co:公司名'，标记已投触发的重渲染不会把展开状态吸回去。 */
+  const byCo=new Map();
+  for(const r of recs){const k=r.company||'（未填公司）';if(!byCo.has(k))byCo.set(k,[]);byCo.get(k).push(r)}
+  const recGrps=[...byCo.entries()].map(([co,rs])=>{
+    rs.sort((a,b)=>(b.appliedOn||'')<(a.appliedOn||'')?-1:(b.appliedOn||'')>(a.appliedOn||'')?1:b.id-a.id);
+    const isIso=v=>/^\d{4}-\d{2}-\d{2}$/.test(v||'');
+    const dates=rs.map(r=>r.appliedOn).filter(isIso).sort();
+    const locs=[...new Set(rs.map(r=>(r.location||'').trim()).filter(Boolean))];
+    const sc={};rs.forEach(r=>sc[r.status]=(sc[r.status]||0)+1);
+    const allq=rs.map(r=>r.company+' '+r.job+' '+(r.location||'')+' '+(r.status||'')+' '+(r.note||'')+' '+(r.salary||'')).join(' ').toLowerCase();
+    return {co,rs,latest:dates[dates.length-1]||'',earliest:dates[0]||'',locs,sc,allq,maxId:Math.max(...rs.map(r=>r.id||0))};
+  });
+  recGrps.sort((a,b)=> (b.latest||'').localeCompare(a.latest||'') || b.maxId-a.maxId);
+  const recJobRow=r=>{
+    const q=(r.company+' '+r.job+' '+(r.location||'')+' '+(r.status||'')+' '+(r.note||'')).toLowerCase();
+    const noteRaw=(r.note||'').trim();
+    /* 「看板标记已投递（2026-11-26）」这类自动写入的备注，日期列已经有了，别再重复一遍 */
+    const autoNote=/^看板标记已投递（.*）$/.test(noteRaw)&&noteRaw.includes(r.appliedOn||'\u0000');
+    const sub=[esc(r.location||''),esc((autoNote?'':noteRaw).slice(0,160))].filter(Boolean).join(' · ');
+    return `<div class="rjob flt" data-q="${esc(q)}">
+      <span class="jdate" title="${/^\d{4}-\d{2}-\d{2}$/.test(r.appliedOn||'')?'投递日期 '+esc(r.appliedOn):'这条没有记录投递日期'}">${/^\d{4}-\d{2}-\d{2}$/.test(r.appliedOn||'')?esc(r.appliedOn):'—'}</span>
+      <div class="jmain"><div class="jtitle">${r.url?`<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.job)}</a>`:esc(r.job)}${r.salary?` ${salChip(r.salary)}`:''}</div>
+        ${sub?`<div class="jsub" title="${esc((r.location||'')+(!autoNote&&r.note?' · '+r.note:''))}">${sub}</div>`:''}</div>
+      <span class="stpill st-${esc(r.status)}"><i class="sdot"></i><select class="stsel" title="更改状态" onchange="setRecStatus(${r.id},this.value)">${STATUSES.map(x=>`<option ${x===r.status?'selected':''}>${x}</option>`).join('')}</select></span>
+      <button class="mini ibtn btn-drop" title="删除这条" onclick="delRecord(${r.id})">${ic('trash')}</button>
+    </div>`;
+  };
+  const recGrpRow=(g,i)=>{
+    const open=OPENROWS.has('co:'+g.co);
+    const kinds=[...STATUSES.filter(x=>g.sc[x]),...Object.keys(g.sc).filter(x=>!STATUSES.includes(x))];
+    const statTxt=kinds.length===1?kinds[0]:kinds.map(x=>`${x} ${g.sc[x]}`).join(' · ');
+    const multi=g.rs.length>1;
+    const first=g.rs[0]||{};
+    /* 薪资列：最近这条岗位的薪资排最前（组内已按投递日期倒序），
+       其余口径并列跟上；一个都没填就留空。 */
+    const sl=salLine(g.rs.map(r=>r.salary));
+    return `<div class="rrow rgrow flt${open?' open':''}" data-id="co:${esc(g.co)}" data-co="${esc(g.co)}" data-q="${esc(g.allq)}">
+      <div class="rhead" role="button" tabindex="0" aria-expanded="${open?'true':'false'}" onclick="toggleRow(this)" onkeydown="rowKey(event,this)">
+        <span class="rno">${String(i+1).padStart(2,'0')}</span>
+        <div style="min-width:0">
+          <div style="display:flex;gap:7px;align-items:baseline;min-width:0"><span class="rco">${esc(g.co)}</span><span class="runit">${esc(g.locs.join(' / '))}</span></div>
+          <div class="rjobline"><b>${esc(first.job||'')}</b></div>
+        </div>
+        <span class="rsal${sl.txt?(sl.neutral?' mut':''):' none'}" title="${esc(sl.tip)}">${esc(sl.txt)}</span>
+        <div class="rmeta">${statTxt?`<span class="rstats">${esc(statTxt)}</span>`:''}${multi?`<span class="jt">${g.rs.length} 岗</span>`:''}${g.latest?`<span class="dltag" title="最近一次投递 ${esc(g.latest)}">${esc(g.latest.slice(5))}</span>`:''}</div>
+        <span class="rchev">${ic('chev')}</span>
+      </div>
+      <div class="rbody"${open?'':' hidden'}>${g.rs.map(recJobRow).join('')}</div>
+    </div>`;
+  };
+  const recH2ops=`<span class="h2ops"><button onclick="expandAll(true,'#panel-records')">全部展开</button><button onclick="expandAll(false,'#panel-records')">全部收起</button></span>`;
+  $('#panel-records').innerHTML=`<h2>${ic('list','lg')}全部已投 <span class="cnt">${recGrps.length} 家 · ${recs.length} 条</span>${recH2ops}</h2>
     <div style="margin:0 0 10px"><button onclick="openRecordForm()">${ic('plus')}新增记录</button></div>
-    <table><tr><th>日期</th><th>公司</th><th>岗位</th><th>地点</th><th>状态</th><th>备注</th><th></th></tr>${recs.map(r=>`<tr class="flt" data-q="${esc((r.company+' '+r.job+' '+(r.location||'')+' '+(r.status||'')).toLowerCase())}"><td>${esc(r.appliedOn||'—')}</td><td>${esc(r.company)}</td><td>${r.url?`<a href="${esc(r.url)}" target="_blank">${esc(r.job)}</a>`:esc(r.job)}</td><td>${esc(r.location||'')}</td><td><select class="stsel st-${esc(r.status)}" onchange="setRecStatus(${r.id},this.value)">${STATUSES.map(s=>`<option ${s===r.status?'selected':''}>${s}</option>`).join('')}</select></td><td class="small mut">${esc((r.note||'').slice(0,80))}</td><td><button class="mini ibtn btn-drop" title="删除" onclick="delRecord(${r.id})">${ic('trash')}</button></td></tr>`).join('')}</table>`;
+    ${recGrps.length?`<div class="rlist">${recGrps.map(recGrpRow).join('')}</div>`:'<p class="mut">无</p>'}`;
   $('#panel-verify').innerHTML=`<h2>${ic('eye','lg')}备选 <span class="cnt">${DB.verify.length} 条</span></h2>
     <div class="frm" style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px">
       <input type="text" id="vf-who" placeholder="对象（如公司名）" style="flex:1;min-width:140px">
       <input type="text" id="vf-why" placeholder="卡点 / 待核实原因" style="flex:2;min-width:200px">
       <button class="primary" onclick="submitVerify()">${ic('plus')}加入</button></div>
-    <table><tr><th>对象</th><th>卡点</th><th></th></tr>${DB.verify.map(v=>`<tr class="flt" data-q="${esc((v.who+' '+v.why).toLowerCase())}"><td>${esc(v.who)}</td><td class="small">${esc(v.why)}</td><td><button class="mini ibtn btn-drop" title="删除" onclick="delVerify(${v.id})">${ic('trash')}</button></td></tr>`).join('')}</table>`;
-  $('#panel-excluded').innerHTML=`<h2>${ic('ban','lg')}已排除 <span class="cnt">${DB.excluded.length} 条</span></h2><table><tr><th>公司/岗位</th><th>原因</th><th></th></tr>${DB.excluded.map(e=>`<tr class="flt" data-q="${esc((e.who+' '+e.why).toLowerCase())}"><td>${esc(e.who)}</td><td class="small">${esc(e.why)}</td><td><button class="mini ibtn btn-drop" title="删除" onclick="delExcluded(${e.id})">${ic('trash')}</button></td></tr>`).join('')}</table>`;
+    <table><colgroup><col style="width:200px"><col><col style="width:40px"></colgroup><tr><th>对象</th><th>卡点</th><th></th></tr>${DB.verify.map(v=>`<tr class="flt" data-q="${esc((v.who+' '+v.why).toLowerCase())}"><td>${esc(v.who)}</td><td class="small">${esc(v.why)}</td><td><button class="mini ibtn btn-drop" title="删除" onclick="delVerify(${v.id})">${ic('trash')}</button></td></tr>`).join('')}</table>`;
+  $('#panel-excluded').innerHTML=`<h2>${ic('ban','lg')}已排除 <span class="cnt">${DB.excluded.length} 条</span></h2><table><colgroup><col style="width:210px"><col><col style="width:40px"></colgroup><tr><th>公司/岗位</th><th>原因</th><th></th></tr>${DB.excluded.map(e=>`<tr class="flt" data-q="${esc((e.who+' '+e.why).toLowerCase())}"><td>${esc(e.who)}</td><td class="small">${esc(e.why)}</td><td><button class="mini ibtn btn-drop" title="删除" onclick="delExcluded(${e.id})">${ic('trash')}</button></td></tr>`).join('')}</table>`;
 
   const groups=(DB.leadGroups&&DB.leadGroups.length)?DB.leadGroups:[{key:'A',title:'A 组'},{key:'B',title:'B 组'},{key:'C',title:'C 组'},{key:'D',title:'D 组'}];
   const leadLinkHtml=Object.entries(DB.leadLinks||{}).map(([co,l])=>`<div class="small">${esc(co)}：<a href="${esc(l.href)}" target="_blank">${esc(l.label||l.href)}</a></div>`).join('');
   let leadHtml=leadLinkHtml;const seenG=new Set();
   const leadRow=l=>`<tr class="flt" data-q="${esc((l.company+' '+(l.job||'')+' '+(l.location||'')+' '+(l.note||'')).toLowerCase())}"><td>${esc(l.company)}${(DB.leadExtraTags&&DB.leadExtraTags[l.company]||[]).map(t=>` <span class="tag hot">${esc(t)}</span>`).join('')}</td><td>${esc(l.job||'')}</td><td>${esc(l.location||'')}</td><td>${esc(l.deadlineText||'')}</td><td class="small">${esc(l.req||'')}</td><td class="small">${esc(l.note||'')}</td><td class="small mut">${esc(l.src||'')}</td></tr>`;
   for(const g of groups){const rows=DB.leads.filter(l=>l.groupKey===g.key);seenG.add(g.key);if(!rows.length)continue;
-    leadHtml+=`<div class="leadgroup"><h3>${esc(g.title)}${g.note?` <span class="cnt">· ${esc(g.note)}</span>`:''} <span class="cnt">（${rows.length}）</span></h3><table><tr><th>公司</th><th>岗位</th><th>地点</th><th>截止</th><th>要求</th><th>核实进展</th><th>来源</th></tr>${rows.map(leadRow).join('')}</table></div>`}
+    leadHtml+=`<div class="leadgroup"><h3>${esc(g.title)}${g.note?` <span class="cnt">· ${esc(g.note)}</span>`:''} <span class="cnt">（${rows.length}）</span></h3><table><colgroup><col style="width:126px"><col style="width:186px"><col style="width:66px"><col style="width:120px"><col><col style="width:186px"><col style="width:112px"></colgroup><tr><th>公司</th><th>岗位</th><th>地点</th><th>截止</th><th>要求</th><th>核实进展</th><th>来源</th></tr>${rows.map(leadRow).join('')}</table></div>`}
   const restLeads=DB.leads.filter(l=>!seenG.has(l.groupKey));
-  if(restLeads.length)leadHtml+=`<div class="leadgroup"><h3>未分组 <span class="cnt">（${restLeads.length}）</span></h3><table><tr><th>公司</th><th>岗位</th><th>地点</th><th>截止</th><th>核实进展</th></tr>${restLeads.map(l=>`<tr class="flt" data-q="${esc((l.company+' '+(l.job||'')).toLowerCase())}"><td>${esc(l.company)}</td><td>${esc(l.job||'')}</td><td>${esc(l.location||'')}</td><td>${esc(l.deadlineText||'')}</td><td class="small">${esc(l.note||'')}</td></tr>`).join('')}</table></div>`;
+  if(restLeads.length)leadHtml+=`<div class="leadgroup"><h3>未分组 <span class="cnt">（${restLeads.length}）</span></h3><table><colgroup><col style="width:150px"><col style="width:200px"><col style="width:84px"><col style="width:100px"><col></colgroup><tr><th>公司</th><th>岗位</th><th>地点</th><th>截止</th><th>核实进展</th></tr>${restLeads.map(l=>`<tr class="flt" data-q="${esc((l.company+' '+(l.job||'')).toLowerCase())}"><td>${esc(l.company)}</td><td>${esc(l.job||'')}</td><td>${esc(l.location||'')}</td><td>${esc(l.deadlineText||'')}</td><td class="small">${esc(l.note||'')}</td></tr>`).join('')}</table></div>`;
   $('#panel-leads').innerHTML=`<h2>${ic('cap','lg')}待投线索 <span class="cnt">${DB.leads.length} 条</span></h2>${leadHtml}`;
-  const stageCard=(v,i)=>`<div class="card flt" data-q="${esc((v.company+' '+v.job).toLowerCase())}"><div class="chead"><span class="no">${i+1}</span><span class="co" style="font-size:15px">${esc(v.company)}</span> <span class="unit">${esc(v.job)}</span></div>${(v.metas||[]).map(metaLine).join('')}</div>`;
-  $('#panel-interview').innerHTML=`<h2>${ic('users','lg')}面试中 <span class="cnt">${DB.interview.length} 条</span></h2>${DB.interview.map(stageCard).join('')||'<p class="mut">无</p>'}`;
-  $('#panel-test').innerHTML=`<h2>${ic('pen','lg')}笔试中 <span class="cnt">${DB.test.length} 条</span></h2>${DB.test.map(stageCard).join('')||'<p class="mut">无</p>'}`;
-  const rushHtml=DB.rush.map((v,i)=>`<div class="card flt" data-q="${esc((v.title+' '+(v.unit||'')).toLowerCase())}"><div class="chead"><span class="no">${i+1}</span><span class="co" style="font-size:15px">${esc(v.title)}</span> <span class="unit">${esc(v.unit||'')}</span></div><div class="descr">${esc(v.descr||'')}</div>${(v.links||[]).length?`<div class="links">${v.links.map(linkLine).join('')}</div>`:''}${(v.tags&&v.tags.length)?`<div class="tagrow">${v.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:''}</div>`).join('');
-  $('#panel-rush').innerHTML=`<h2>${ic('target','lg')}冲刺项 <span class="cnt">${DB.rush.length} 项</span></h2>${rushHtml||'<p class="mut">无</p>'}`;
+  /* 阶段清单同样压成行：一行一条，首行公司+岗位，次行进度（单行省略，悬停看全文） */
+  const stageRow=(v,i)=>{
+    const metas=(v.metas||[]).filter(m=>m&&(m.before||m.text));
+    const txt=metas.map(m=>`${m.before||''}${m.text||''}${m.after||''}`).join(' ｜ ');
+    const href=(metas.find(m=>m.href)||{}).href||'';
+    const q=txt.toLowerCase();
+    return `<div class="rrow flt" data-q="${esc((v.company+' '+v.job+' '+q).toLowerCase())}">
+      <div class="rhead" style="cursor:default" ${href?`onclick="window.open('${esc(href)}','_blank')"`:''}>
+        <span class="rno">${String(i+1).padStart(2,'0')}</span>
+        <div style="min-width:0"><div style="display:flex;gap:7px;align-items:baseline;min-width:0"><span class="rco">${esc(v.company)}</span><span class="runit">${esc(v.job||'')}</span></div>
+          ${txt?`<div class="stageMeta" title="${esc(txt)}">${esc(txt)}</div>`:''}</div>
+        <div class="rmeta">${href?`<span class="jt">${ic('ext')}链接</span>`:''}</div>
+        <span></span>
+      </div></div>`;
+  };
+  $('#panel-interview').innerHTML=`<h2>${ic('users','lg')}面试中 <span class="cnt">${DB.interview.length} 条</span></h2>${DB.interview.length?`<div class="rlist">${DB.interview.map(stageRow).join('')}</div>`:'<p class="mut">无</p>'}`;
+  $('#panel-test').innerHTML=`<h2>${ic('pen','lg')}笔试中 <span class="cnt">${DB.test.length} 条</span></h2>${DB.test.length?`<div class="rlist">${DB.test.map(stageRow).join('')}</div>`:'<p class="mut">无</p>'}`;
+  const rushRow=(v,i)=>{
+    const q=(v.title+' '+(v.unit||'')+' '+(v.descr||'')).toLowerCase();
+    const rOpen=OPENROWS.has('r'+v.id);
+    return `<div class="rrow flt${rOpen?' open':''}" data-id="r${v.id}" data-q="${esc(q)}">
+      <div class="rhead" role="button" tabindex="0" onclick="toggleRow(this)" onkeydown="rowKey(event,this)">
+        <span class="rno">${String(i+1).padStart(2,'0')}</span>
+        <div style="min-width:0"><div class="rco">${esc(v.title)}</div><div class="rjobline">${esc(v.unit||'')}</div></div>
+        <div class="rmeta">${(v.tags||[]).map(t=>`<span class="pz">${esc(t)}</span>`).join('')}</div>
+        <span class="rchev">${ic('chev')}</span>
+      </div>
+      <div class="rbody"${rOpen?'':' hidden'}><div class="descr" style="white-space:pre-wrap">${esc(v.descr||'')}</div>${(v.links||[]).length?`<div class="links">${v.links.map(linkLine).join('')}</div>`:''}</div></div>`;
+  };
+  const rushHtml=DB.rush.map(rushRow).join('');
+  $('#panel-rush').innerHTML=`<h2>${ic('target','lg')}冲刺项 <span class="cnt">${DB.rush.length} 项</span></h2>${rushHtml?`<div class="rlist">${rushHtml}</div>`:'<p class="mut">无</p>'}`;
   setBTab(BTAB);
 }
 function submitVerify(){const who=$('#vf-who').value.trim(),why=$('#vf-why').value.trim();if(!who){toast('请填对象');return}addVerify(who,why)}
@@ -531,17 +942,24 @@ function submitVerify(){const who=$('#vf-who').value.trim(),why=$('#vf-why').val
 /* ---------------- 表单：新增/编辑 ---------------- */
 function closeForm(){$('#form-area').innerHTML=''}
 function closeSForm(){$('#sform-area').innerHTML=''}
+function paintCdCaps(){const el=$('#sf-cdverb');if(!el)return;const v=el.value||'';document.querySelectorAll('#sf-cdvcaps button').forEach(b=>b.classList.toggle('on',b.textContent===v))}
+function setCdVerb(v){const el=$('#sf-cdverb');if(el)el.value=v;paintCdCaps()}
+function sfTypeChanged(){const el=$('#sf-type');if(!el)return;const d={'exam-online':'开考','exam-offline':'开考',interview:'开始',talk:'开始',deadline:'截止'}[el.value];if(d)setCdVerb(d)}
+document.addEventListener('click',e=>{if(e.target.id==='form-area')closeForm();if(e.target.id==='sform-area')closeSForm()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#form-area').innerHTML)closeForm();if($('#sform-area').innerHTML)closeSForm()}});
 let editCardId=null;
 function jobRowHtml(){return `<div class="jobrow">
   <label>岗位名 *</label><input type="text" class="jr-t" placeholder="如 内容编导">
   <label>岗位信息（城市 · 学历 · 届别）</label><input type="text" class="jr-m" placeholder="如 北京 · 硕士 · 2027 届">
+  <label>薪资（官方未公布就留空）</label><input type="text" class="jr-s" placeholder="如 8-10K/月">
   <label>岗位说明 / JD 要点</label><textarea class="jr-d"></textarea>
+  <input type="hidden" class="jr-lh"><input type="hidden" class="jr-lt">
   <div style="margin-top:6px"><button class="mini btn-drop" onclick="this.closest('.jobrow').remove()">删掉这个岗位</button></div></div>`}
 function openCardForm(id){
   editCardId=id||null;
   const c=id?DB.cards.find(x=>x.id===id):null;
   show('board');
-  $('#form-area').innerHTML=`<div class="card frm"><h3 style="margin-top:0">${c?'编辑公司卡':'新增公司卡'}</h3>
+  $('#form-area').innerHTML=`<div class="card frm"><div class="fhead"><h3>${c?'编辑公司卡':'新增公司卡'}</h3><button class="ibtn" title="关闭" onclick="closeForm()">${ic('x')}</button></div><div class="fbody">
     <div class="grid">
       <div><label>公司名 *</label><input type="text" id="cf-company"></div>
       <div><label>单位 / 部门</label><input type="text" id="cf-unit"></div>
@@ -550,33 +968,33 @@ function openCardForm(id){
     </div>
     <label style="margin-top:10px"><input type="checkbox" id="cf-rolling" style="width:auto"> 招满即止</label>
     <label>卡片综述</label><textarea id="cf-descr"></textarea>
+    <label>企业简介</label><textarea id="cf-intro" placeholder="这家公司是做什么的、什么背景（一两句）"></textarea>
     <div class="grid">
       <div><label>投递入口文字</label><input type="text" id="cf-linktext" placeholder="如 官方投递页"></div>
       <div><label>投递入口链接</label><input type="url" id="cf-linkhref" placeholder="https://"></div>
     </div>
     <h3>岗位</h3><div id="cf-jobs"></div>
     <button onclick="$('#cf-jobs').insertAdjacentHTML('beforeend',jobRowHtml())">＋ 再加一个岗位</button>
-    <div class="frow"><button class="primary" onclick="submitCardForm()">${c?'保存修改':'建卡'}</button>
+    </div><div class="frow"><button class="primary" onclick="submitCardForm()">${c?'保存修改':'建卡'}</button>
     <button onclick="closeForm()">取消</button></div></div>`;
   const jobsEl=$('#cf-jobs');
   if(c){
     $('#cf-company').value=c.company||'';$('#cf-unit').value=c.unit||'';
     $('#cf-deadline').value=c.deadline||'';$('#cf-tags').value=(c.tags||[]).join('，');
-    $('#cf-rolling').checked=!!c.rolling;$('#cf-descr').value=c.descr||'';
+    $('#cf-rolling').checked=!!c.rolling;$('#cf-descr').value=c.descr||'';$('#cf-intro').value=c.intro||'';
     const l=(c.links||[])[0]||{};$('#cf-linktext').value=l.text||'';$('#cf-linkhref').value=l.href||'';
-    (c.jobs||[]).forEach(j=>{jobsEl.insertAdjacentHTML('beforeend',jobRowHtml());const row=jobsEl.lastElementChild;row.querySelector('.jr-t').value=j.title||'';row.querySelector('.jr-m').value=j.meta||'';row.querySelector('.jr-d').value=j.desc||''});
+    (c.jobs||[]).forEach(j=>{jobsEl.insertAdjacentHTML('beforeend',jobRowHtml());const row=jobsEl.lastElementChild;row.querySelector('.jr-t').value=j.title||'';row.querySelector('.jr-m').value=j.meta||'';row.querySelector('.jr-d').value=j.desc||'';row.querySelector('.jr-s').value=j.salary||'';row.querySelector('.jr-lh').value=j.link?j.link.href:'';row.querySelector('.jr-lt').value=j.link?j.link.text:''});
   }
   if(!jobsEl.children.length)jobsEl.insertAdjacentHTML('beforeend',jobRowHtml());
-  $('#form-area').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function submitCardForm(){
   const company=$('#cf-company').value.trim();
   if(!company){toast('请填公司名');return}
-  const jobs=[...document.querySelectorAll('#cf-jobs .jobrow')].map(r=>({title:r.querySelector('.jr-t').value.trim(),meta:r.querySelector('.jr-m').value.trim(),desc:r.querySelector('.jr-d').value.trim()})).filter(j=>j.title);
+  const jobs=[...document.querySelectorAll('#cf-jobs .jobrow')].map(r=>{const j={title:r.querySelector('.jr-t').value.trim(),meta:r.querySelector('.jr-m').value.trim(),desc:r.querySelector('.jr-d').value.trim(),salary:r.querySelector('.jr-s').value.trim()};const lh=r.querySelector('.jr-lh').value.trim();if(lh)j.link={href:lh,text:r.querySelector('.jr-lt').value.trim()};return j}).filter(j=>j.title);
   if(!jobs.length){toast('至少填一个岗位');return}
   const href=$('#cf-linkhref').value.trim(),lt=$('#cf-linktext').value.trim();
   const data={company,unit:$('#cf-unit').value.trim(),deadline:$('#cf-deadline').value||null,rolling:$('#cf-rolling').checked,
-    descr:$('#cf-descr').value.trim(),tags:$('#cf-tags').value.split(/[,，]/).map(s=>s.trim()).filter(Boolean),
+    descr:$('#cf-descr').value.trim(),intro:$('#cf-intro').value.trim(),tags:$('#cf-tags').value.split(/[,，]/).map(s=>s.trim()).filter(Boolean),
     jobs,links:href||lt?[{before:'投递入口：',text:lt||href,href,after:''}]:[]};
   if(editCardId){
     const c=DB.cards.find(x=>x.id===editCardId);if(!c)return;
@@ -592,7 +1010,7 @@ function submitCardForm(){
 }
 function openRecordForm(){
   show('board');
-  $('#form-area').innerHTML=`<div class="card frm"><h3 style="margin-top:0">新增已投记录</h3>
+  $('#form-area').innerHTML=`<div class="card frm"><div class="fhead"><h3>新增已投记录</h3><button class="ibtn" title="关闭" onclick="closeForm()">${ic('x')}</button></div><div class="fbody">
     <div class="grid">
       <div><label>公司名 *</label><input type="text" id="rf-company"></div>
       <div><label>岗位名 *</label><input type="text" id="rf-job"></div>
@@ -600,21 +1018,21 @@ function openRecordForm(){
       <div><label>投递日期</label><input type="date" id="rf-date"></div>
       <div><label>状态</label><select id="rf-status">${STATUSES.map(s=>`<option>${s}</option>`).join('')}</select></div>
       <div><label>投递链接</label><input type="url" id="rf-url" placeholder="https://"></div>
+      <div><label>薪资</label><input type="text" id="rf-salary" placeholder="官方未公布留空"></div>
     </div>
     <label>备注</label><textarea id="rf-note"></textarea>
-    <div class="frow"><button class="primary" onclick="submitRecordForm()">添加记录</button><button onclick="closeForm()">取消</button></div></div>`;
+    </div><div class="frow"><button class="primary" onclick="submitRecordForm()">添加记录</button><button onclick="closeForm()">取消</button></div></div>`;
   $('#rf-date').value=todayStr();
-  $('#form-area').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function submitRecordForm(){
   const company=$('#rf-company').value.trim(),job=$('#rf-job').value.trim();
   if(!company||!job){toast('公司和岗位必填');return}
-  DB.records.push({id:nextId(DB.records),company,job,location:$('#rf-loc').value.trim(),appliedOn:$('#rf-date').value||null,status:$('#rf-status').value,jd:'',url:$('#rf-url').value.trim(),note:$('#rf-note').value.trim()});
+  DB.records.push({id:nextId(DB.records),company,job,location:$('#rf-loc').value.trim(),appliedOn:$('#rf-date').value||null,status:$('#rf-status').value,jd:'',url:$('#rf-url').value.trim(),salary:$('#rf-salary').value.trim(),note:$('#rf-note').value.trim()});
   closeForm();save();renderAll();toast('已添加记录');
 }
 
 /* ---------------- 日程表 ---------------- */
-const TL={assess:'线上测评','exam-online':'线上笔试','exam-offline':'线下笔试',ai:'AI测评',interview:'真人面试',talk:'宣讲会',deadline:'网申截止',todo:'待办',done:'已完成'};
+const TL={assess:'线上测评','exam-online':'线上笔试','exam-offline':'线下笔试',ai:'AI面试',interview:'真人面试',talk:'宣讲会',deadline:'网申截止',todo:'待办',done:'已完成'};
 const FIVE=['assess','exam-online','exam-offline','ai','interview'];
 const TYPEIC={assess:'clip','exam-online':'pen','exam-offline':'pen',ai:'spark',interview:'users',talk:'mega',deadline:'clock',todo:'inbox',done:'check'};
 const PIC={'投递中':'send','笔试':'pen','面试':'users','未通过':'xcirc'};
@@ -629,36 +1047,127 @@ function cdText(it){
   return `${days} 天后 · ${d.getMonth()+1} 月 ${d.getDate()} 日${tm}`;
 }
 const WD=['日','一','二','三','四','五','六'];
+function fmtD(ds){if(!ds)return'';const d=new Date(ds+'T00:00:00');return `${d.getMonth()+1}月${d.getDate()}日（周${WD[d.getDay()]}）`}
+function warnTags(it){
+  const t=((it.status||'')+' '+(it.detail||'')).replace(/不撞车|无撞车|未撞车|没撞车|没有撞车|不冲突|无冲突/g,'');
+  const out=[];
+  if(t.includes('撞车'))out.push(`<span class="wtag">${ic('alert')}疑似撞车</span>`);
+  if(t.includes('待核对')||t.includes('待确认'))out.push(`<span class="wtag amb">${ic('eye')}待核对</span>`);
+  if(t.includes('逾期')||t.includes('视为放弃'))out.push(`<span class="wtag crit">${ic('clock')}逾期视为放弃</span>`);
+  return out.join('');
+}
+/* 旧版整段截止文案；行视图已改用 dlMain/dlSub 拆分，此处保留供表单/分享复用 */
+function dlText(c){
+  if(!c.deadline)return c.rolling?'招满即止':'无截止';
+  const d=daysUntil(c.deadline),md=esc(c.deadline.slice(5));
+  if(d<0)return `已过期 · ${esc(c.deadline)}`;
+  if(d===0)return `今天截止 · ${md}`;
+  return `剩 ${d} 天 · ${md} 截止`;
+}
+/* 截止文案拆两段：主段（剩 N 天）永远显示，副段（· 12-06 截止）在窄屏收起 */
+function dlMain(c){
+  if(!c.deadline)return c.rolling?'招满即止':'';
+  const d=daysUntil(c.deadline);
+  if(d<0)return '已过期';
+  if(d===0)return '今天截止';
+  return `剩 ${d} 天`;
+}
+function dlSub(c){
+  if(!c.deadline)return '';
+  const md=(c.deadline||'').slice(5),d=daysUntil(c.deadline);
+  if(d<0)return ' · '+c.deadline;
+  if(d===0)return ' · '+md;
+  return ' · '+md+' 截止';
+}
 function schedOps(it){return `<button class="btn-done" onclick="schedDone(${it.id})">${ic('check')}完成</button>
-  <button class="ibtn" title="编辑" onclick="openSchedForm(${it.id})">${ic('pencil')}</button>
   <button class="btn-drop" onclick="schedDrop(${it.id})">${ic('x')}放弃</button>`}
 function entryLine(it){return it.entry?`<div class="small iline">${ic('ext')}<a href="${esc(it.entry)}" target="_blank">${esc(it.entryText||it.entry)}</a></div>`:(it.entryText?`<div class="small iline">${ic('ext')}${esc(it.entryText)}</div>`:'')}
 function srcLine(it){return it.link?`<div class="small mut iline">${ic('link')}<a href="${esc(it.link)}" target="_blank">${esc(it.linkText||it.link)}</a></div>`:''}
-function rushItemHtml(it){
-  const days=daysUntil(it.date),d=new Date(it.date+'T00:00:00');
-  const tier=days<=1?'u0':days<=3?'u1':'u2';
-  const verb=it.cdVerb||((it.type==='exam-online'||it.type==='exam-offline')?'开考':'开始');
-  const cd=days===0?`<span class="cdnum">今天</span>`:`<span class="cdnum">${days}</span><span class="cdunit">天后</span>`;
-  return `<div class="card rcard ${tier}"><div class="rline1">${cd}<span class="rtitle">${esc(it.company||'')} · ${esc(it.title||'')}</span></div>
-    <div class="rtime">${ic('cal')}${d.getMonth()+1}月${d.getDate()}日（周${WD[d.getDay()]}）${it.time?' '+esc(it.time):''} ${verb}</div>
-    ${it.status?`<div class="small mut">${esc(it.status)}</div>`:''}
-    ${it.detail?clampHtml(it.detail,'descr'):''}${entryLine(it)}${srcLine(it)}
-    <div class="ops">${schedOps(it)}</div></div>`;
+/* 日程行（2026-11-26）：原来「迫在眉睫」每张卡撑满整行宽、约 240px 高，
+   一屏只放得下 3 条。改成与待投递同一套「行 + 展开」：收起 ~52px，
+   左栏放日期（迫在眉睫区放倒计时），点开才看详情、入口链接与完成/放弃。 */
+function srowHtml(it){
+  const hasDate=!!it.date;
+  const days=hasDate?daysUntil(it.date):null;
+  const d=hasDate?new Date(it.date+'T00:00:00'):null;
+  const over=days!==null&&days<0;
+  const tier=days===null?'':(over||days<=1?'u0':days<=3?'u1':'u2');
+  const TVERB={deadline:'截止','exam-online':'开考','exam-offline':'开考',interview:'面试',ai:'AI 面试',assess:'测评',talk:'宣讲'};
+  const verb=it.cdVerb||TVERB[it.type]||'';
+  const key='s'+it.id, open=OPENROWS.has(key);
+  /* 日期已在左栏（MM-DD + 周），第二行只放时间 + 动作 + 状态，不再重复日期 */
+  const timePart=it.time?(esc(it.time)+(verb?' '+verb:'')):(it.type==='deadline'?(verb||'截止'):'');
+  const sub=[timePart,it.status?esc(it.status):''].filter(Boolean).join(' · ');
+  let gut;
+  if(!hasDate)gut=`<div class="sdate"><b class="mut">未定</b><span>无日期</span></div>`;
+  else gut=`<div class="sdate"><b>${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}</b><span>周${WD[d.getDay()]}</span></div>`;
+  /* 时间线行只在 7 天内挂倒计时胶囊，30 天后的「还剩 30 天」是噪音 */
+  const pill=(days!==null&&days<=7)?`<span class="cdpill ${tier}">${over?'已逾期':days===0?'今天':days+' 天后'}</span>`:'';
+  const q=(it.company+' '+(it.title||'')+' '+(it.status||'')+' '+(it.detail||'')+' '+(TL[it.type]||'')).toLowerCase();
+  const hot=(days!==null&&days>=0&&days<=3)?(days<=1?' hot0':' hot1'):'';
+  return `<div class="rrow srow flt${open?' open':''}${hot}" data-id="${key}" data-q="${esc(q)}">
+    <div class="rhead" role="button" tabindex="0" aria-expanded="${open?'true':'false'}" onclick="toggleRow(this)" onkeydown="rowKey(event,this)">
+      ${gut}
+      <div style="min-width:0">
+        <div class="sline1"><span class="rco">${esc(it.company||'')}</span><span class="stitle">${esc(it.title||'')}</span></div>
+        <div class="smeta2">${sub?`<span class="smtxt">${sub}</span>`:''}<span class="tag tyc-${it.type||''}">${ic(TYPEIC[it.type]||'dot')}${esc(TL[it.type]||it.type||'')}</span>${warnTags(it)}</div>
+      </div>
+      <div class="rmeta">${pill}</div>
+      <span class="rchev">${ic('chev')}</span>
+    </div>
+    <div class="rbody"${open?'':' hidden'}>
+      ${it.detail?clampHtml(it.detail,'descr'):''}${entryLine(it)}${srcLine(it)}
+      <div class="rfoot">${schedOps(it)}<button class="mini" onclick="openSchedForm(${it.id})">${ic('pencil')}编辑</button></div>
+    </div>
+  </div>`;
 }
-function itemHtml(it){
-  return `<div class="card item"><span class="when">${esc(it.company||'')}</span> · ${esc(it.title||'')}
-    <span class="tag">${ic(TYPEIC[it.type]||'dot')}${esc(TL[it.type]||it.type||'')}</span>
-    ${it.date?`<span class="small">${ic('cal')}${esc(it.date)}${it.dateEnd?' ~ '+esc(it.dateEnd):''} ${esc(it.time||'')}</span>`:''}
-    ${it.status?`<div class="small mut">${esc(it.status)}</div>`:''}
-    ${it.detail?clampHtml(it.detail,'descr'):''}${entryLine(it)}${srcLine(it)}
-    <div class="ops">${schedOps(it)}</div></div>`;
-}
+function itemHtml(it){return srowHtml(it)}
 let SF='all';try{SF=sessionStorage.getItem('qz-sf')||'all'}catch(e){}
 function setSF(t){SF=t;try{sessionStorage.setItem('qz-sf',t)}catch(e){}renderSched();}
+let SVIEW='list';try{SVIEW=sessionStorage.getItem('qz-sview')||'list'}catch(e){}
+let CALW=null,SELDAY=null;
+function setSView(v){SVIEW=v;try{sessionStorage.setItem('qz-sview',v)}catch(e){}renderSched();}
+function calMove(d){const base=CALW?new Date(CALW):new Date();base.setHours(0,0,0,0);base.setDate(base.getDate()+d*7);CALW=base;renderSched();}
+function calToday(){CALW=null;SELDAY=null;renderSched();}
+function selDay(ds){SELDAY=ds;renderSched();}
+/* 日历色条收拢为三档：红＝网申截止，琥珀＝考试类，蓝＝面试类，其余灰。
+   原来 8 个类型 8 色，格子里一片彩点反而看不出哪条最要紧。 */
+const TYCOL={assess:'var(--warn)','exam-online':'var(--warn)','exam-offline':'var(--warn)',ai:'var(--acc)',interview:'var(--acc)',talk:'var(--mut)',deadline:'var(--danger)',todo:'var(--mut)'};
+function calHtml(live,inF){
+  const now=new Date();now.setHours(0,0,0,0);
+  const p2=n=>String(n).padStart(2,'0');
+  const dsOf=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+  const todayStr=dsOf(now);
+  if(!SELDAY)SELDAY=todayStr;
+  const byDay={};
+  live.filter(x=>x.date&&inF(x)).forEach(x=>{
+    const a=x.date,b=(x.dateEnd&&x.dateEnd>=x.date)?x.dateEnd:x.date;
+    let d=new Date(a+'T00:00:00');const end=new Date(b+'T00:00:00');let guard=0;
+    while(d<=end&&guard<62){(byDay[dsOf(d)]=byDay[dsOf(d)]||[]).push(x);d.setDate(d.getDate()+1);guard++;}
+  });
+  const anchor=CALW?new Date(CALW):new Date(now);
+  const monday=new Date(anchor);monday.setDate(anchor.getDate()-((anchor.getDay()+6)%7));
+  const sunday=new Date(monday);sunday.setDate(monday.getDate()+6);
+  let cells='';
+  for(let i=0;i<7;i++){
+    const d=new Date(monday);d.setDate(monday.getDate()+i);
+    const ds=dsOf(d),items=(byDay[ds]||[]).slice().sort((a,b)=>(a.time||'')<(b.time||'')?-1:1);
+    const chips=items.slice(0,3).map(x=>`<div class="citem" style="border-left-color:${TYCOL[x.type]||'#999'}">${x.time&&!(x.title||'').includes(x.time)?esc(x.time)+' ':''}${esc(x.company||'')}${x.title?' · '+esc(x.title):''}</div>`).join('')+(items.length>3?`<div class="cmore">还有 ${items.length-3} 项</div>`:'');
+    cells+=`<div class="cday week${ds===todayStr?' today':''}${ds===SELDAY?' sel':''}" onclick="selDay('${ds}')"><div class="cnum">${d.getDate()}</div>${ds===todayStr?'<span class="tflag">今</span>':''}${chips||'<div class="cdots"></div>'}</div>`;
+  }
+  const selItems=(byDay[SELDAY]||[]).slice().sort((a,b)=>(a.time||'')<(b.time||'')?-1:1);
+  const sd=new Date(SELDAY+'T00:00:00');
+  const range=`${monday.getMonth()+1}月${monday.getDate()}日 – ${sunday.getMonth()+1}月${sunday.getDate()}日`;
+  return `<div class="calbar"><button onclick="calMove(-1)">‹ 上周</button><span class="caltitle">${monday.getFullYear()} 年 · ${range}</span><button onclick="calMove(1)">下周 ›</button><button onclick="calToday()">回到本周</button></div>
+  <div class="calgrid"><div class="cwd">一</div><div class="cwd">二</div><div class="cwd">三</div><div class="cwd">四</div><div class="cwd">五</div><div class="cwd">六</div><div class="cwd">日</div>${cells}</div>
+  <h2>${ic('cal','lg')}${SELDAY===todayStr?'今天':`${sd.getMonth()+1}月${sd.getDate()}日 · 周${WD[sd.getDay()]}`} <span class="cnt">${selItems.length} 项</span></h2>
+  ${selItems.length?`<div class="rlist">${selItems.map(itemHtml).join('')}</div>`:'<p class="mut">这一天没有事项</p>'}`;
+}
 function renderSched(){
   const sc2={};DB.records.forEach(r=>sc2[r.status]=(sc2[r.status]||0)+1);
   const pipeDef=(DB.pipelineDef&&DB.pipelineDef.length)?DB.pipelineDef:[{label:'投递中',color:'#2456c4'},{label:'笔试',color:'#d97706'},{label:'面试',color:'#0e7a5f'},{label:'未通过',color:'#9aa1ad'}];
-  const pipe=pipeDef.filter(p=>p.label!=='待投线索').map(p=>`<span class="dst" style="color:${esc(p.color||'inherit')}">${ic(PIC[p.label]||'dot')}${esc(p.label)} <b>${sc2[p.label]||0}</b></span>`).join(' ｜ ');
+  /* 流程条颜色改由状态语义决定，不再读数据里的 color 字段（保持数据不动） */
+  const pipe=pipeDef.filter(p=>p.label!=='待投线索').map(p=>`<span class="dst stc-${esc(p.label)}">${ic(PIC[p.label]||'dot')}${esc(p.label)} <b>${sc2[p.label]||0}</b></span>`).join(' ｜ ');
   const live=DB.schedule.filter(visible);
   const inF=x=>SF==='all'||x.type===SF;
   const byDT=(a,b)=>(a.date+(a.time||''))<(b.date+(b.time||''))?-1:1;
@@ -668,29 +1177,29 @@ function renderSched(){
   const nodate=live.filter(x=>!x.date&&inF(x));
   const windows=live.filter(x=>x.type==='deadline').length;
   const cntT=t=>live.filter(x=>x.type===t).length;
-  const chips=[['all','全部'],['assess','线上测评'],['exam-online','线上笔试'],['exam-offline','线下笔试'],['ai','AI测评'],['interview','真人面试'],['talk','宣讲会'],['deadline','网申截止'],['todo','待办']].map(([k,l])=>`<button class="${SF===k?'on':''}" onclick="setSF('${k}')">${ic(k==='all'?'list':(TYPEIC[k]||'dot'))}${l} ${k==='all'?live.length:cntT(k)}</button>`).join('');
+  const chips=[['all','全部'],['assess','线上测评'],['exam-online','线上笔试'],['exam-offline','线下笔试'],['ai','AI面试'],['interview','真人面试'],['talk','宣讲会'],['deadline','网申截止'],['todo','待办']].map(([k,l])=>`<button data-k="${k}" class="${SF===k?'on':''}" onclick="setSF('${k}')">${ic(k==='all'?'list':(TYPEIC[k]||'dot'))}${l} ${k==='all'?live.length:cntT(k)}</button>`).join('');
   const now=new Date();
   let stat1;
   if(rushAll.length){
     const n0=rushAll[0],days=daysUntil(n0.date);
-    stat1=`<div class="stat"><div class="num red">${days===0?'今天':days+'<span class="u">天</span>'}</div><div class="lab">${ic('flame')}距最近节点（${esc(n0.company||'')} · ${esc(n0.title||'')}）</div></div>`;
-  }else stat1=`<div class="stat"><div class="num red">—</div><div class="lab">${ic('flame')}距最近节点（暂无）</div></div>`;
+    stat1=`<div class="stat c5"><div class="num${days<=0?' red':''}">${days===0?'今天':days+'<span class="u">天</span>'}</div><div class="lab">${ic('flame')}距最近 · ${esc(n0.company||'')}</div></div>`;
+  }else stat1=`<div class="stat c5"><div class="num">—</div><div class="lab">${ic('flame')}距最近节点 · 暂无</div></div>`;
   $('#sched-main').innerHTML=`
     <div class="sched-head"><div>
       <div class="today">今天 <span class="bdate">${now.getMonth()+1}月${now.getDate()}日</span> · 周${WD[now.getDay()]}</div>
 </div>
-      <span style="flex:1"></span><button class="primary" onclick="openSchedForm()">${ic('plus')}新增日程</button><button class="themebtn" onclick="cycleTheme()">${esc(themeLabel())}</button></div>
-    <nav class="btabs" style="margin:2px 0 12px">${chips}</nav>
+      <span style="flex:1"></span><span class="seg"><button class="${SVIEW==='list'?'on':''}" onclick="setSView('list')">${ic('list')}时间线</button><button class="${SVIEW==='cal'?'on':''}" onclick="setSView('cal')">${ic('cal')}日历</button></span><button class="primary" onclick="openSchedForm()">${ic('plus')}新增日程</button></div>
+    <nav class="btabs chips" style="margin:2px 0 12px">${chips}</nav>
     <div class="stats">${stat1}
-      <div class="stat"><div class="num">${windows}<span class="u">个</span></div><div class="lab">${ic('clock')}待关闭窗口</div></div>
-      <div class="stat"><div class="num">${dated.length}<span class="u">个</span></div><div class="lab">${ic('cal')}在途节点</div></div>
-      <div class="stat"><div class="num">${nodate.length}<span class="u">件</span></div><div class="lab">${ic('inbox')}待通知 · 待处理</div></div>
+      <div class="stat c7${windows?'':' zero'}"><div class="num">${windows}<span class="u">个</span></div><div class="lab">${ic('clock')}待关闭窗口</div></div>
+      <div class="stat c2${dated.length?'':' zero'}"><div class="num">${dated.length}<span class="u">个</span></div><div class="lab">${ic('cal')}在途节点</div></div>
+      <div class="stat c3${nodate.length?'':' zero'}"><div class="num">${nodate.length}<span class="u">件</span></div><div class="lab">${ic('inbox')}待通知 · 待处理</div></div>
     </div>
-    ${pipe?`<h2>${ic('target','lg')}投递进度概览</h2><p>${pipe}</p>`:''}
-    ${SF==='all'?`<h2>${ic('flame','lg')}迫在眉睫</h2><p class="small mut" style="margin:-2px 0 10px"><b style="color:var(--u0)">● 今天/明天</b>　<b style="color:var(--u1)">● 2–3 天</b>　<b style="color:var(--u2)">● 4–7 天</b></p>
-    ${rush.length?rush.map(rushItemHtml).join(''):'<p class="mut">暂无</p>'}`:''}
-    <h2>${ic('cal','lg')}时间线 <span class="cnt">${dated.length}</span></h2>${dated.length?dated.map(itemHtml).join(''):'<p class="mut">暂无</p>'}
-    <h2>${ic('inbox','lg')}无日期待办 <span class="cnt">${nodate.length} 件</span></h2>${nodate.length?nodate.map(itemHtml).join(''):'<p class="mut">暂无</p>'}`;
+    ${SVIEW==='cal'?calHtml(live,inF):''}
+    ${/* 「迫在眉睫」原为独立区块，内容就是时间线的前几行，重复渲染让 10 件事变成 13 行。
+          现并入时间线：3 天内的事项用行首色条 + 行尾倒计时胶囊标记，信息不丢、不再重复。 */''}
+    ${SVIEW!=='cal'?`<h2>${ic('cal','lg')}时间线 <span class="cnt">${dated.length} 项</span><span class="h2ops"><span class="lg-inline"><b style="color:var(--danger)">▍</b>今天/明天　<b style="color:var(--warn)">▍</b>2–3 天</span></span></h2>${dated.length?`<div class="rlist">${dated.map(itemHtml).join('')}</div>`:'<p class="mut">暂无</p>'}`:''}
+    ${SVIEW!=='cal'?`<h2>${ic('inbox','lg')}无日期待办 <span class="cnt">${nodate.length} 件</span></h2>${nodate.length?`<div class="rlist">${nodate.map(itemHtml).join('')}</div>`:'<p class="mut">暂无</p>'}`:''}`;
   paintThemeBtn();
 }
 let editSchedId=null;
@@ -698,22 +1207,27 @@ function openSchedForm(id){
   editSchedId=id||null;
   const it=id?DB.schedule.find(x=>x.id===id):null;
   show('sched');
-  $('#sform-area').innerHTML=`<div class="card frm"><h3 style="margin-top:0">${it?'编辑日程':'新增日程'}</h3>
+  $('#sform-area').innerHTML=`<div class="card frm"><div class="fhead"><h3>${it?'编辑日程':'新增日程'}</h3><button class="ibtn" title="关闭" onclick="closeSForm()">${ic('x')}</button></div>
+    <div class="fbody">
     <div class="grid">
       <div><label>公司 *</label><input type="text" id="sf-company"></div>
       <div><label>事项名 *</label><input type="text" id="sf-title" placeholder="如 线上笔试 / 终面"></div>
-      <div><label>类型</label><select id="sf-type">${Object.entries(TL).filter(([k])=>k!=='done').map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></div>
+      <div><label>类型</label><select id="sf-type" onchange="sfTypeChanged()">${Object.entries(TL).filter(([k])=>k!=='done').map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></div>
       <div><label>时间段（如 09:00–11:00）</label><input type="text" id="sf-time"></div>
       <div><label>日期（留空 = 无日期待办）</label><input type="date" id="sf-date"></div>
-      <div><label>结束日期（窗口型事项）</label><input type="date" id="sf-dateend"></div>
       <div><label>状态</label><input type="text" id="sf-status"></div>
-      <div><label>倒计时动词（开考 / 开始 / 截止）</label><input type="text" id="sf-cdverb"></div>
-      <div><label>行动入口链接</label><input type="url" id="sf-entry" placeholder="https://"></div>
-      <div><label>行动入口文字</label><input type="text" id="sf-entrytext"></div>
-      <div><label>出处链接</label><input type="url" id="sf-link" placeholder="https://"></div>
-      <div><label>出处文字</label><input type="text" id="sf-linktext"></div>
+      <div style="grid-column:1/-1"><label>倒计时动词（按类型自动选，可改）</label><input type="hidden" id="sf-cdverb"><div class="caps" id="sf-cdvcaps"><button type="button" onclick="setCdVerb('开考')">开考</button><button type="button" onclick="setCdVerb('开始')">开始</button><button type="button" onclick="setCdVerb('截止')">截止</button></div></div>
     </div>
+    <details class="moreopts"${it&&(it.dateEnd||it.entry||it.entryText||it.link||it.linkText)?' open':''}><summary>更多选项 · 结束日期 / 链接与来源</summary>
+    <div class="grid">
+      <div><label>结束日期（窗口型事项）</label><input type="date" id="sf-dateend"></div>
+      <div><label>行动入口文字</label><input type="text" id="sf-entrytext"></div>
+      <div><label>行动入口链接</label><input type="url" id="sf-entry" placeholder="https://"></div>
+      <div><label>出处文字</label><input type="text" id="sf-linktext"></div>
+      <div><label>出处链接</label><input type="url" id="sf-link" placeholder="https://"></div>
+    </div></details>
     <label>详情</label><textarea id="sf-detail"></textarea>
+    </div>
     <div class="frow"><button class="primary" onclick="submitSchedForm()">${it?'保存修改':'添加日程'}</button><button onclick="closeSForm()">取消</button></div></div>`;
   if(it){
     $('#sf-company').value=it.company||'';$('#sf-title').value=it.title||'';$('#sf-type').value=it.type||'todo';
@@ -723,7 +1237,7 @@ function openSchedForm(id){
     $('#sf-link').value=it.link||'';$('#sf-linktext').value=it.linkText||'';
     $('#sf-detail').value=it.detail||'';
   }
-  $('#sform-area').scrollIntoView({behavior:'smooth',block:'start'});
+  if(it)paintCdCaps();else sfTypeChanged();
 }
 function submitSchedForm(){
   const company=$('#sf-company').value.trim(),title=$('#sf-title').value.trim();
@@ -751,35 +1265,29 @@ function exportData(){download('秋招数据-'+todayStr()+'.json',JSON.stringify
 let shareObj=null,shareSingle=false;
 function shareCardObj(c,jobIdx){
 const jobs=(typeof jobIdx==='number')?[c.jobs[jobIdx]]:c.jobs;
-return {company:c.company,unit:c.unit||'',deadline:c.deadline||'',rolling:!!c.rolling,descr:c.descr||'',links:c.links||[],tags:c.tags||[],jobs:jobs.map(j=>({title:j.title,meta:j.meta||'',desc:j.desc||''}))};
+return {company:c.company,unit:c.unit||'',deadline:c.deadline||'',rolling:!!c.rolling,descr:c.descr||'',intro:c.intro||'',links:c.links||[],tags:c.tags||[],jobs:jobs.map(j=>({title:j.title,meta:j.meta||'',desc:j.desc||'',salary:j.salary||''}))};
 }
 function shareText(o){
-const L=[`【岗位分享】${o.company}${o.unit?' · '+o.unit:''}`];
-o.jobs.forEach(j=>{L.push(`岗位：${j.title}${j.meta?'（'+j.meta+'）':''}`);if(j.desc)L.push(`JD 要点：${j.desc}`)});
+const L=[`【岗位分享】${o.company}`];
+if(o.unit)L.push(o.unit);
 L.push(`截止：${o.deadline||(o.rolling?'招满即止':'无公布截止')}`);
-if(o.descr)L.push(`说明：${o.descr}`);
-(o.links||[]).filter(l=>l.href).forEach(l=>L.push(`${l.text||'链接'}：${l.href}`));
+const ls=(o.links||[]).filter(l=>l.href);
+if(ls.length){L.push('');ls.forEach(l=>{L.push(`${l.before||''}${l.text||'链接'}`);L.push(l.href)});}
+if(o.intro)L.push('',`企业简介：${o.intro}`);
+if(o.descr)L.push('',`招聘说明：${o.descr}`);
+o.jobs.forEach((j,i)=>{
+L.push('',o.jobs.length>1?`${i+1}. ${j.title}`:j.title);
+if(j.meta)L.push(j.meta);
+if(j.link)L.push(`${j.link.text||'岗位详情'}：${j.link.href}`);
+if(j.salary)L.push(`薪资：${j.salary}`);
+if(j.desc)L.push(`JD：${j.desc}`);
+});
 return L.join('\n');
 }
 function openShare(cardId,jobIdx){
 const c=DB.cards.find(x=>x.id===cardId);if(!c)return;
 shareSingle=(typeof jobIdx==='number');shareObj=shareCardObj(c,jobIdx);
-show('board');
-$('#form-area').innerHTML=`<div class="card frm"><h3 style="margin-top:0">分享：${esc(c.company)}${shareSingle?' · '+esc(c.jobs[jobIdx].title):''}</h3>
-<label>分享文本（可直接粘贴发送）</label>
-<textarea id="share-txt" rows="9" readonly>${esc(shareText(shareObj))}</textarea>
-<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-<button class="primary" onclick="copyShareCode()">复制口令</button>
-<button onclick="copyShare()">复制文本</button>
-<button onclick="copyShareLink()">复制链接</button>
-<button onclick="closeForm()">关闭</button>
-</div>
-<p class="small mut" style="margin-top:8px">把口令或链接发给对方：对方在工作台点「口令导入」粘贴口令即可领取，链接则直接打开在线版领取。导入都是合并进待投递（同名公司自动并入新岗位），不会覆盖原有数据。</p></div>`;
-const fa=$('#form-area');if(fa.scrollIntoView)fa.scrollIntoView({behavior:'smooth',block:'start'});
-}
-function copyShare(){
-const t=$('#share-txt');if(!t)return;
-copyText(t.value,'已复制，去粘贴发送吧');
+copyText(shareText(shareObj),'已复制分享文本，去粘贴发送吧');
 }
 function copyText(txt,msg){
 const done=()=>toast(msg||'已复制');
@@ -789,91 +1297,11 @@ else{fallbackCopy(txt);done()}
 function fallbackCopy(txt){
 const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove();
 }
-function sharePayload(){return {'qz-share':1,kind:shareSingle?'job':'card',card:shareObj}}
-function shareCode(){
-const b=btoa(unescape(encodeURIComponent(JSON.stringify(sharePayload())))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-return 'QZ1.'+b;
-}
-function copyShareCode(){
-if(!shareObj)return;
-copyText(`【秋招工作台 · 岗位口令】${shareObj.company}${shareSingle?' · '+shareObj.jobs[0].title:''}\n${shareCode()}\n复制整段，在秋招工作台点「口令导入」粘贴即可领取`,'口令已复制，发给对方粘贴导入即可');
-}
-function copyShareLink(){
-if(!shareObj)return;
-copyText('https://realdalao.github.io/qiuzhao-workbench/#s='+shareCode().slice(4),'链接已复制，对方打开即可领取');
-}
-function decodeShareCode(code){
-let b=String(code||'').replace(/-/g,'+').replace(/_/g,'/');
-while(b.length%4)b+='=';
-const obj=JSON.parse(decodeURIComponent(escape(atob(b))));
-if(!obj||!obj['qz-share']||!obj.card)throw new Error('bad code');
-return obj;
-}
-function importSharePayload(obj){
-const r=mergeSharedCard(obj.card);
-save();renderAll();show('board');setBTab('apply');
-toast(r.merged?(r.added?`已合并进现有「${obj.card.company}」卡，新增 ${r.added} 个岗位`:`「${obj.card.company}」的岗位你都有了，未重复添加`):`已导入「${obj.card.company}」到待投递`);
-}
-function openCodeImport(){
-show('board');
-$('#form-area').innerHTML=`<div class="card frm"><h3 style="margin-top:0">口令导入</h3>
-<label>把收到的岗位口令整段粘贴到这里</label>
-<textarea id="code-in" rows="5" placeholder="【秋招工作台 · 岗位口令】… QZ1.…"></textarea>
-<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-<button class="primary" onclick="submitCodeImport()">导入</button>
-<button onclick="closeForm()">取消</button>
-</div></div>`;
-const fa=$('#form-area');if(fa.scrollIntoView)fa.scrollIntoView({behavior:'smooth',block:'start'});
-}
-function submitCodeImport(){
-const v=($('#code-in')||{}).value||'';
-const m=v.match(/QZ1\.([A-Za-z0-9\-_]+)/);
-if(!m){toast('没找到有效口令，请粘贴完整口令');return}
-try{const obj=decodeShareCode(m[1]);closeForm();importSharePayload(obj)}
-catch(e){toast('口令解析失败，可能已损坏或不完整')}
-}
-function importFromHash(){
-if(window._hashShare){const o=window._hashShare;window._hashShare=null;closeForm();importSharePayload(o)}
-}
-function checkShareHash(){
-if(!location.hash||location.hash.indexOf('#s=')!==0)return;
-try{
-const obj=decodeShareCode(location.hash.slice(3));
-history.replaceState(null,'',location.pathname+location.search);
-window._hashShare=obj;
-show('board');
-$('#form-area').innerHTML=`<div class="card frm"><h3 style="margin-top:0">收到一个分享岗位</h3>
-<p>${esc(obj.card.company)}${obj.card.unit?' · '+esc(obj.card.unit):''}：${obj.card.jobs.map(j=>esc(j.title)).join('、')}</p>
-<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-<button class="primary" onclick="importFromHash()">导入到待投递</button>
-<button onclick="closeForm()">忽略</button>
-</div></div>`;
-}catch(e){}
-}
-function mergeSharedCard(o){
-if(!o||!o.company||!Array.isArray(o.jobs)||!o.jobs.length)throw new Error('bad share');
-const ex=DB.cards.find(x=>x.company===o.company);
-if(ex){
-let added=0;
-o.jobs.forEach(j=>{if(!ex.jobs.some(e=>e.title===j.title)){ex.jobs.push({title:j.title,meta:j.meta||'',desc:j.desc||''});added++}});
-if(!ex.deadline&&o.deadline)ex.deadline=o.deadline;
-if(!(ex.links&&ex.links.length)&&o.links)ex.links=o.links;
-if(!ex.descr&&o.descr)ex.descr=o.descr;
-return {merged:true,added};
-}
-const nid=DB.cards.reduce((m,x)=>Math.max(m,x.id||0),0)+1;
-DB.cards.push({id:nid,company:o.company,unit:o.unit||'',deadline:o.deadline||'',rolling:!!o.rolling,descr:o.descr||'',links:o.links||[],tags:o.tags||[],jobs:o.jobs.map(j=>({title:j.title,meta:j.meta||'',desc:j.desc||''}))});
-return {merged:false,added:o.jobs.length};
-}
 function importData(input){
   const f=input.files&&input.files[0];if(!f)return;
   const rd=new FileReader();
   rd.onload=()=>{try{
       const obj=JSON.parse(rd.result);
-      if(obj&&obj['qz-share']&&obj.card){
-        closeForm();closeSForm();importSharePayload(obj);
-        return;
-      }
       if(!obj||!Array.isArray(obj.cards)||!Array.isArray(obj.records)||!Array.isArray(obj.schedule))throw new Error('bad');
       DB=norm(obj);closeForm();closeSForm();save();renderAll();toast('导入成功');
     }catch(e){toast('导入失败：不是有效的数据 JSON')}};
@@ -898,7 +1326,7 @@ function buildIcs(){
 }
 function exportIcs(){download('qiuzhao.ics',buildIcs(),'text/calendar');toast('已导出 .ics，可导入手机/电脑日历')}
 
-renderAll();checkBackup();checkShareHash();
+renderAll();checkBackup();
 </script>
 </body>
 </html>
